@@ -1,5 +1,10 @@
 //<editor-fold defaultstate="collapsed" desc="Constantes">
 /**
+ * Afficher les coordonnées du tableau
+ * @type Boolean
+ */
+const SHOW_COORDINATE = true;
+/**
  * Longueur de la map affichee a l'ecran
  * @type Number
  */
@@ -129,45 +134,75 @@ var isMarioTomber = false;
  */
 var tableau_map;
 /**
- * Position de mario en x
+ * Position du coin supérieur gauche de mario en x
  * @type Number
  */
-var mario_x = 0;
+var mario_sg_x = 0;
 /**
- * Position de mario en y
+ * Position du coin supérieur gauche de mario en y
  * @type Number
  */
-var mario_y = 0;
+var mario_sg_y = 0;
 /**
- * Position precedente de mario en x
+ * Position du coin inférieur droit de mario en x
  * @type Number
  */
-var mario_x_prec = 0;
+var mario_id_x = 0;
 /**
- * Position precedente de mario en y
+ * Position du coin inférieur droit de mario en y
  * @type Number
  */
-var mario_y_prec = 0;
+var mario_id_y = 0;
 /**
- * Vitesse de mario horizontalement
+ * Position precedente du coin supérieur gauche de mario en x
+ * @type Number
+ */
+var mario_sg_x_prec = 0;
+/**
+ * Position precedente du coin supérieur gauche de mario en y
+ * @type Number
+ */
+var mario_sg_y_prec = 0;
+/**
+ * Position precedente du coin inférieur droit de mario en x
+ * @type Number
+ */
+var mario_id_x_prec = 0;
+/**
+ * Position precedente du coin inférieur droit de mario en y
+ * @type Number
+ */
+var mario_id_y_prec = 0;
+/**
+ * Vitesse de mario horizontalement (déplacement vers la droite si >0, déplacement vers la gauche si <0)
  * @type Number
  */
 var vitesse_mario_x = 0;
 /**
- * Vitesse de mario verticalement
+ * Vitesse de mario verticalement (déplacement vers le bas si >0, déplacement vers le haut si <0)
  * @type Number
  */
 var vitesse_mario_y = 0;
 /**
- * Ligne de mario dans la map
+ * Ligne du coin supérieur gauche de mario dans la map
  * @type Number
  */
-var mario_ligne = 0;
+var mario_sg_ligne = 0;
 /**
- * Colonne de mario dans la map
+ * Colonne du coin supérieur gauche de mario dans la map
  * @type Number
  */
-var mario_colonne = 0;
+var mario_sg_colonne = 0;
+/**
+ * Ligne du coin inférieur droit de mario dans la map
+ * @type Number
+ */
+var mario_id_ligne = 0;
+/**
+ * Colonne du coin inférieur droit de mario dans la map
+ * @type Number
+ */
+var mario_id_colonne = 0;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -206,104 +241,189 @@ function afficherMap(tableau, zone) {
     var ligne, char, url, x, y;
     for (var lig = 0; lig < tableau.length; lig++) { //length=longueur
         ligne = tableau[lig];
+        y = lig * BLOC_HEIGHT;
         // on affiche les donnees d'une seule zone
         for(var col = zone * LONGUEUR_MAP; col < (zone + 1) * LONGUEUR_MAP && col < ligne.length; col++) {
             //console.log(tableau[lig][col]);
             char = tableau[lig][col];
-            x = (col - zone * LONGUEUR_MAP) * BLOC_WIDTH;
-            y = lig * BLOC_HEIGHT;
+            x = (col - zone * LONGUEUR_MAP) * BLOC_WIDTH;            
             url = (bloc[char] === undefined ? bloc['_'] : bloc[char]); //le triple egal signifie une egalite stricte
             DrawImage(url, x, y, BLOC_WIDTH, BLOC_HEIGHT);
+        }
+        if (SHOW_COORDINATE) {
+            Texte(x + BLOC_WIDTH, y + 2 * BLOC_HEIGHT / 3, lig, "#000000");
+        }
+    }
+    if (SHOW_COORDINATE) {
+        lig = tableau.length;
+        y = lig * BLOC_HEIGHT;
+        for(var col = zone * LONGUEUR_MAP; col < (zone + 1) * LONGUEUR_MAP; col++) {
+            x = (col - zone * LONGUEUR_MAP) * BLOC_WIDTH;
+            Texte(x + BLOC_WIDTH / 3, y + BLOC_HEIGHT, col, "#000000");
         }
     }
 }
 
 /**
- * Afficher mario
- * @param {float} temps Le temps du jeu
- * @param {array} tableau_map Tableau contenant la map
+ * Afficher mario et détecter les obstacles
  * @returns {boolean} False si mario est en vol, True s'il a touche un obstacle
  */
-function afficherMario(tableau_map) {
-    // Math.ceil retourne la valeur d'un nombre arrondi à l'entier supérieur
-    mario_ligne = mario_y / MARIO_HEIGHT_SMALL;
-    mario_ligne = (vitesse_mario_y > 0 ? Math.ceil(mario_ligne) : Math.floor(mario_ligne));
-    
-    mario_colonne = mario_x / MARIO_WIDTH_SMALL;
-    mario_colonne = (vitesse_mario_x > 0 ? Math.ceil(mario_colonne) : Math.floor(mario_colonne));
-    //console.log(mario_x + " : " + mario_y);
+function afficherMario() {
+    setMarioLigneColonne();
     
     // effacer position precedente de mario
-    DrawImage(bloc[cellule_vide],
-              mario_x_prec + (vitesse_mario_x > 0 ? -1 : (vitesse_mario_x < 0 ? 1 : 0)), // decalage d'un pixel pour bien effacer l'image precedente
-              mario_y_prec + (vitesse_mario_y > 0 ? -1 : (vitesse_mario_y < 0 ? 1 : 0)), 
-              MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+    DrawImage(bloc[cellule_vide], mario_sg_x_prec, mario_sg_y_prec, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+    // + (vitesse_mario_sg_x > 0 ? -1 : (vitesse_mario_sg_x < 0 ? 1 : 0)) : decalage d'un pixel pour bien effacer l'image precedente
+    //  + (vitesse_mario_sg_y > 0 ? -1 : (vitesse_mario_sg_y < 0 ? 1 : 0))
     
     // afficher mario
-    if (tableau_map[mario_ligne][mario_colonne] === cellule_vide) {
-        DrawImage((vitesse_mario_x >= 0 ? mario['petit'] : mario['petit_gauche']),mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-        mario_x_prec = mario_x;
-        mario_y_prec = mario_y;
+    if (isAucunObstacle()) {
+        DrawImage((vitesse_mario_x >= 0 ? mario['petit'] : mario['petit_gauche']),mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+        
+        mario_sg_x_prec = mario_sg_x;
+        mario_sg_y_prec = mario_sg_y;
+        
+        showCoordinate();
+        
         return false;
     } else {
-        mario_x = (mario_colonne + (vitesse_mario_x > 0 ? -1 : (vitesse_mario_x < 0 ? 1 : 0))) * BLOC_WIDTH;
-        mario_y = (mario_ligne + (vitesse_mario_y > 0 ? -1 : (vitesse_mario_y < 0 ? 1 : 0))) * BLOC_HEIGHT;
+        mario_sg_x = (mario_sg_colonne + (vitesse_mario_x > 0 ? -1 : (vitesse_mario_x < 0 ? 1 : 0))) * BLOC_WIDTH;
+        mario_sg_y = (mario_sg_ligne + (vitesse_mario_y > 0 ? -1 : (vitesse_mario_y < 0 ? 1 : 0))) * BLOC_HEIGHT;
         
-        DrawImage(mario['petit'],mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+        DrawImage(mario['petit'],mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
         
-        mario_x_prec = mario_x;
-        mario_y_prec = mario_y;
+        mario_sg_x_prec = mario_sg_x;
+        mario_sg_y_prec = mario_sg_y;
         
         vitesse_mario_x = 0;
         vitesse_mario_y = 0;
+        
+        setMarioLigneColonne();
+
+        showCoordinate();
+        
         return true;
+    }
+}
+
+/**
+ * Recalcule la valeur de la ligne et de la colonne dans laquelle se trouve mario
+ * @returns {undefined}
+ */
+function setMarioLigneColonne() {
+    //<editor-fold defaultstate="collapsed" desc="Point supérieur gauche">
+    // Math.floor retourne la valeur d'un nombre arrondi à l'entier inférieur
+    //mario_sg_ligne = (vitesse_mario_y > 0 ? Math.ceil(mario_sg_ligne) : Math.floor(mario_sg_ligne));
+    mario_sg_ligne = Math.floor(mario_sg_y / MARIO_HEIGHT_SMALL);
+    if (mario_sg_ligne < 0) {
+        mario_sg_ligne = 0;
+        mario_sg_y = 0;
+    } else if (mario_sg_ligne >= HAUTEUR_MAP) {
+        mario_sg_ligne = HAUTEUR_MAP - 1;
+        mario_sg_y = mario_sg_ligne * MARIO_HEIGHT_SMALL;
+    }
+
+    //mario_sg_colonne = (vitesse_mario_sg_x > 0 ? Math.ceil(mario_sg_colonne) : Math.floor(mario_sg_colonne));
+    mario_sg_colonne = Math.floor(mario_sg_x / MARIO_WIDTH_SMALL);
+    if (mario_sg_colonne < 0) {
+        mario_sg_colonne = 0;
+        mario_sg_x = 0;
+    } else if (mario_sg_colonne >= LONGUEUR_MAP) {
+        mario_sg_colonne = LONGUEUR_MAP - 1;
+        mario_sg_x = mario_sg_colonne * MARIO_WIDTH_SMALL;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Point inférieur droit">
+    // Math.ceil retourne la valeur d'un nombre arrondi à l'entier supérieur
+    //mario_sg_ligne = (vitesse_mario_y > 0 ? Math.ceil(mario_sg_ligne) : Math.floor(mario_sg_ligne));
+    mario_id_ligne = Math.ceil(mario_id_y / MARIO_HEIGHT_SMALL);
+    if (mario_id_ligne < 0) {
+        mario_id_ligne = 0;
+        mario_id_y = 0;
+    } else if (mario_id_ligne >= HAUTEUR_MAP) {
+        mario_id_ligne = HAUTEUR_MAP - 1;
+        mario_id_y = mario_id_ligne * MARIO_HEIGHT_SMALL;
+    }
+    
+    //mario_sg_colonne = (vitesse_mario_sg_x > 0 ? Math.ceil(mario_sg_colonne) : Math.floor(mario_sg_colonne));
+    mario_id_colonne = Math.floor(mario_id_x / MARIO_WIDTH_SMALL);
+    if (mario_id_colonne < 0) {
+        mario_id_colonne = 0;
+        mario_id_x = 0;
+    } else if (mario_id_colonne >= LONGUEUR_MAP) {
+        mario_id_colonne = LONGUEUR_MAP - 1;
+        mario_id_x = mario_id_colonne * MARIO_WIDTH_SMALL;
+    }
+    //</editor-fold>
+}
+
+/**
+ * Détection d'obstacle
+ * @returns {Boolean} True alors pas d'obstacle, false sinon
+ */
+function isAucunObstacle() {
+    return tableau_map[mario_sg_ligne][mario_sg_colonne] === cellule_vide;
+}
+
+/**
+ * Affiche les coordonnées de mario à l'écran
+ * @returns {undefined}
+ */
+function showCoordinate() {
+    if (SHOW_COORDINATE) {
+        RectanglePlein(0, (HAUTEUR_MAP + 1) * BLOC_HEIGHT, 20 * BLOC_WIDTH, 4 * BLOC_HEIGHT, 'yellow');
+        Texte(0, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_x = " + mario_sg_x, "black");
+        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_colonne = " + mario_sg_colonne, "black");
+        Texte(0, (HAUTEUR_MAP + 3) * BLOC_HEIGHT, "mario_sg_y = " + mario_sg_y, "black");
+        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 3) * BLOC_HEIGHT, "mario_sg_ligne = " + mario_sg_ligne, "black");
     }
 }
 
 /**
  * Animer la chute de mario dans le jeu
  * @param {float} temps Le temps du jeu
- * @param {array} tableau_map Tableau contenant la map
  * @returns {boolean} False si mario est en vol, True s'il a atteint le sol
  */
-function faireTomberMario(temps, tableau_map) {
-    mario_y = GRAVITY * Math.pow(temps, 2) / 2;
+function faireTomberMario(temps) {
+    mario_sg_y = GRAVITY * Math.pow(temps, 2) / 2;
     vitesse_mario_y = GRAVITY * temps;
     
-    return afficherMario(tableau_map);
+    return afficherMario();
 }
 
 /**
  * Deplacer mario dans le jeu
+ * @param {type} tableau_map
  * @returns {undefined}
  */
-function deplacerMario (tableau_map) {
+function deplacerMario () {
     window.onkeydown = function (e) {
         var key = e.keyCode || e.which;
 
         switch (key) {
            case KEY_RIGHT:
-               mario_x += PAS_X;
+               mario_sg_x += PAS_X;
                vitesse_mario_x = PAS_X * FrameRate;
-               afficherMario(tableau_map);
+               afficherMario();
                break;
 
            case KEY_LEFT:
-               mario_x -= PAS_X;
+               mario_sg_x -= PAS_X;
                vitesse_mario_x = -PAS_X * FrameRate;
-               afficherMario(tableau_map);
+               afficherMario();
                break;
 
            case KEY_UP:
-               mario_y -= PAS_X;
+               mario_sg_y -= PAS_X;
                vitesse_mario_y = -PAS_X * FrameRate;
-               afficherMario(tableau_map);
+               afficherMario();
                break;
 
            case KEY_DOWN:
-               mario_y += PAS_X;
+               mario_sg_y += PAS_X;
                vitesse_mario_y = PAS_X * FrameRate;
-               afficherMario(tableau_map);
+               afficherMario();
                break;
                
            default:
@@ -337,11 +457,10 @@ function draw() {
     tps += 1 / FrameRate;
     //console.log(tps);
     if (isMarioTomber) {
-        deplacerMario (tableau_map);
+        deplacerMario();
     } else {
-        isMarioTomber = faireTomberMario(tps, tableau_map);
+        isMarioTomber = faireTomberMario(tps);
     }
-    
 }
 
 // Lancement du jeu
