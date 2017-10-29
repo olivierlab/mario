@@ -40,6 +40,11 @@ const MARIO_HEIGHT_SMALL = BLOC_HEIGHT;
  */
 const KEY_UP = 38;
 /**
+ * Code touche vers le bas
+ * @type Number
+ */
+const KEY_DOWN = 40;
+/**
  * Code touche vers la gauche
  * @type Number
  */
@@ -54,6 +59,11 @@ const KEY_RIGHT = 39;
  * @type Number
  */
 const GRAVITY = 700;
+/**
+ * Pas de deplacement horizontal quand on appuie sur une touche
+ * @type Number
+ */
+const PAS_X = 10;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Var globales">
@@ -231,7 +241,7 @@ function afficherMario(tableau_map) {
     
     // afficher mario
     if (tableau_map[mario_ligne][mario_colonne] === cellule_vide) {
-        DrawImage(mario['petit'],mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+        DrawImage((vitesse_mario_x >= 0 ? mario['petit'] : mario['petit_gauche']),mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
         mario_x_prec = mario_x;
         mario_y_prec = mario_y;
         return false;
@@ -243,6 +253,9 @@ function afficherMario(tableau_map) {
         
         mario_x_prec = mario_x;
         mario_y_prec = mario_y;
+        
+        vitesse_mario_x = 0;
+        vitesse_mario_y = 0;
         return true;
     }
 }
@@ -264,25 +277,38 @@ function faireTomberMario(temps, tableau_map) {
  * Deplacer mario dans le jeu
  * @returns {undefined}
  */
-function deplacerMario () {
+function deplacerMario (tableau_map) {
     window.onkeydown = function (e) {
         var key = e.keyCode || e.which;
 
         switch (key) {
            case KEY_RIGHT:
-               DrawImage(bloc[cellule_vide], mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-               mario_x += 10;
-               DrawImage(mario['petit'], mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+               mario_x += PAS_X;
+               vitesse_mario_x = PAS_X * FrameRate;
+               afficherMario(tableau_map);
                break;
 
            case KEY_LEFT:
-               DrawImage(bloc[cellule_vide], mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-               mario_x -= 10;
-               DrawImage(mario['petit_gauche'], mario_x, mario_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
+               mario_x -= PAS_X;
+               vitesse_mario_x = -PAS_X * FrameRate;
+               afficherMario(tableau_map);
                break;
 
-           default:
+           case KEY_UP:
+               mario_y -= PAS_X;
+               vitesse_mario_y = -PAS_X * FrameRate;
+               afficherMario(tableau_map);
+               break;
 
+           case KEY_DOWN:
+               mario_y += PAS_X;
+               vitesse_mario_y = PAS_X * FrameRate;
+               afficherMario(tableau_map);
+               break;
+               
+           default:
+               vitesse_mario_x = 0;
+               vitesse_mario_y = 0;
                break;
         }
     };
@@ -311,7 +337,7 @@ function draw() {
     tps += 1 / FrameRate;
     //console.log(tps);
     if (isMarioTomber) {
-        deplacerMario ();
+        deplacerMario (tableau_map);
     } else {
         isMarioTomber = faireTomberMario(tps, tableau_map);
     }
