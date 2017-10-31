@@ -60,10 +60,15 @@ const KEY_LEFT = 37;
  */
 const KEY_RIGHT = 39;
 /**
+ * Code pour indiquer qu'aucune touche n'est pressée
+ * @type Number
+ */
+const NO_KEY = -1;
+/**
  * Gravité
  * @type Number
  */
-const GRAVITY = 700;
+const GRAVITY = 800;
 /**
  * Pas de deplacement horizontal quand on appuie sur une touche
  * @type Number
@@ -79,6 +84,11 @@ const GAUCHE = 0;
  * @type Number
  */
 const DROITE = 1;
+/**
+ * Vitesse au début du saut de mario
+ * @type Number
+ */
+const V0 = 500;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Var globales">
@@ -129,10 +139,15 @@ var zone_map = 0;
  */
 FrameRate = 30;
 /**
- * Mesure le temps dans le jeu
+ * Top depart du jeu en ms
  * @type Number
  */
-var tps = 0;
+var top_depart_jeux = Date.now();
+/**
+ * Indicateur d'arrivée de mario dans le jau
+ * @type Boolean
+ */
+var isMarioOnGame = false;
 /**
  * indicateur de la chute de mario
  * @type Boolean
@@ -228,6 +243,21 @@ var offset_tableau = zone_map * LONGUEUR_MAP;
  * @type Number|DROITE|GAUCHE
  */
 var sens = DROITE;
+/**
+ * Timestamp qui marque le top depart de la chute de mario ou false si non initialisé
+ * @type int
+ */
+var top_depart_chute_mario = false;
+/**
+ * Indicateur de touche appuyée
+ * @type Boolean
+ */
+var key_pressed = NO_KEY;
+/**
+ * Position de départ en y de mario au moment du saut
+ * @type Number|mario_sg_y
+ */
+var mario_sg_y_top;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -294,19 +324,100 @@ function afficherMap(tableau, zone) {
 
 /**
  * Animer la chute de mario dans le jeu
- * @param {float} temps Le temps du jeu
  * @returns {boolean} False si mario est en vol, True s'il a atteint le sol
  */
-function faireTomberMario(temps) {
-    mario_sg_y = GRAVITY * Math.pow(temps, 2) / 2;
-    mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
-    vitesse_mario_y = GRAVITY * temps;
+function faireTomberMario() {
+    if (!top_depart_chute_mario) {
+        top_depart_chute_mario = Date.now();
+        mario_sg_y_top = mario_sg_y;
+    }
+    var temps = (Date.now() - top_depart_chute_mario) / 1000;
     
-    setMarioLigneColonne();
+    if (isMarioOnGame) {
+        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_top;
+        vitesse_mario_y = GRAVITY * temps - V0;
+    } else {
+        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2);
+        vitesse_mario_y = GRAVITY * temps;
+    }
     
-    return afficherMario();
+    // Il faut limiter la vitesse de chute sinon mario passe à travers les blocs
+    // mario ne peut se déplacer que d'un bloc maximum par itération
+    if (Math.abs(mario_sg_y - mario_sg_y_prec) > MARIO_HEIGHT_SMALL) {
+        mario_sg_y = mario_sg_y_prec + Math.sign(vitesse_mario_y) * MARIO_HEIGHT_SMALL;
+    }
+
+    var onGround = deplacerMario();
+    
+    // détection de l'arrivée de mario dans le jeu
+    if (!isMarioOnGame && onGround) {
+        isMarioOnGame = true;
+    }
+    
+    return onGround;
 }
 
+/**
+ * Deplacer mario dans le jeu
+ * @returns {undefined}
+ */
+function deplacerMario () {
+    // est déclanché UNIQUEMENT quand on lache une touche !
+    window.onkeyup = function (e) {
+        key_pressed = NO_KEY; // détection du relachement de touche
+    };
+
+    // est déclanché UNIQUEMENT quand on appuie une touche !
+    window.onkeydown = function (e) {        
+        key_pressed = e.keyCode || e.which; // détection de la touche appuyée
+    };
+    
+    // quand il ne se passe rien, on ne fait rien !
+    if (!isMarioTomber || key_pressed !== NO_KEY) {
+        keyDeplacer(key_pressed);
+
+        setMarioLigneColonne();
+
+        return afficherMario();
+    }
+}
+
+/**
+ * Déplace mario en fonction de la touche appuyée
+ * @param {type} key Touche appuyée
+ * @returns {undefined}
+ */
+function keyDeplacer(key) {
+    switch (key) {
+       case KEY_RIGHT:
+           sens = DROITE;
+           mario_sg_x += PAS_X;
+           vitesse_mario_x = PAS_X * FrameRate;
+           break;
+
+       case KEY_LEFT:
+           sens = GAUCHE;
+           mario_sg_x -= PAS_X;
+           vitesse_mario_x = -PAS_X * FrameRate;
+           break;
+
+       case KEY_UP:
+           // quand mario tombe, cette touche doit être désactivée sinon mario rentre dans le décor
+           isMarioTomber = false;
+           break;
+
+       case KEY_DOWN:
+           //mario_sg_y += PAS_X;
+           //vitesse_mario_y = PAS_X * FrameRate;
+           //isMarioTomber = false;
+           break;
+
+       default:
+           break;
+    }
+    mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
+    mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
+}
 /**
  * Afficher mario et détecter les obstacles
  * @returns {boolean} False si mario est en vol, True s'il a touche un obstacle
@@ -322,24 +433,25 @@ function afficherMario() {
     
     if (isNoObstacleH && isNoObstacleV) {
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-        
-        vitesse_mario_x = 0;
-        vitesse_mario_y = 0;
+
+        //vitesse_mario_x = 0;
+        //vitesse_mario_y = 0;
     } else {
         if (!isNoObstacleH) {
             mario_sg_x = (vitesse_mario_x > 0 ? mario_sg_colonne : mario_id_colonne) * BLOC_WIDTH;
-            console.log("!isNoObstacleH");
+            mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
         }
 
         if (!isNoObstacleV) {
             mario_sg_y = (vitesse_mario_y > 0 ? mario_sg_ligne : mario_id_ligne) * BLOC_HEIGHT;
-            console.log("!isNoObstacleV");
+            mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
         }
         
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
 
         vitesse_mario_x = 0;
         vitesse_mario_y = 0;
+        top_depart_chute_mario = false;
         
         setMarioLigneColonne();
     }
@@ -473,51 +585,6 @@ function showInformation() {
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 6) * BLOC_HEIGHT, "vitesse_mario_y = " + vitesse_mario_y, "black");
     }
 }
-
-/**
- * Deplacer mario dans le jeu
- * @returns {undefined}
- */
-function deplacerMario () {
-    window.onkeydown = function (e) {
-        var key = e.keyCode || e.which;
-
-        switch (key) {
-           case KEY_RIGHT:
-               sens = DROITE;
-               mario_sg_x += PAS_X;
-               vitesse_mario_x = PAS_X * FrameRate;
-               break;
-
-           case KEY_LEFT:
-               sens = GAUCHE;
-               mario_sg_x -= PAS_X;
-               vitesse_mario_x = -PAS_X * FrameRate;
-               break;
-
-           case KEY_UP:
-               mario_sg_y -= PAS_X;
-               vitesse_mario_y = -PAS_X * FrameRate;
-               break;
-
-           case KEY_DOWN:
-               mario_sg_y += PAS_X;
-               vitesse_mario_y = PAS_X * FrameRate;
-               break;
-               
-           default:
-               vitesse_mario_x = 0;
-               vitesse_mario_y = 0;
-               break;
-        }
-        mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
-        mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
-        
-        setMarioLigneColonne();
-
-        afficherMario();
-    };
-}
 //</editor-fold>
 
 /**
@@ -538,13 +605,11 @@ function setup() {
  * Gestion du jeu
  * @returns {undefined}
  */
-function draw() {
-    tps += 1 / FrameRate;
-    //console.log(tps);
+function draw() {   
     if (isMarioTomber) {
         deplacerMario();
     } else {
-        isMarioTomber = faireTomberMario(tps);
+        isMarioTomber = faireTomberMario();
     }
 }
 
