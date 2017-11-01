@@ -88,7 +88,7 @@ const DROITE = 1;
  * Vitesse au début du saut de mario
  * @type Number
  */
-const V0 = 500;
+const V0 = 400;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Var globales">
@@ -344,7 +344,7 @@ function faireTomberMario() {
     // Il faut limiter la vitesse de chute sinon mario passe à travers les blocs
     // mario ne peut se déplacer que d'un bloc maximum par itération
     if (Math.abs(mario_sg_y - mario_sg_y_prec) > MARIO_HEIGHT_SMALL) {
-        mario_sg_y = mario_sg_y_prec + Math.sign(vitesse_mario_y) * MARIO_HEIGHT_SMALL;
+        mario_sg_y = Math.floor(mario_sg_y_prec + Math.sign(vitesse_mario_y) * MARIO_HEIGHT_SMALL * 9 / 10);
     }
 
     var onGround = deplacerMario();
@@ -440,17 +440,17 @@ function afficherMario() {
         if (!isNoObstacleH) {
             mario_sg_x = (vitesse_mario_x > 0 ? mario_sg_colonne : mario_id_colonne) * BLOC_WIDTH;
             mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
+            vitesse_mario_x = 0;
         }
 
         if (!isNoObstacleV) {
             mario_sg_y = (vitesse_mario_y > 0 ? mario_sg_ligne : mario_id_ligne) * BLOC_HEIGHT;
             mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
+            vitesse_mario_y = 0;
         }
         
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
 
-        vitesse_mario_x = 0;
-        vitesse_mario_y = 0;
         top_depart_chute_mario = false;
         
         setMarioLigneColonne();
