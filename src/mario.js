@@ -255,7 +255,7 @@ var top_depart_chute_mario = false;
 var key_pressed = NO_KEY;
 /**
  * Position de départ en y de mario au moment du saut
- * @type Number|mario_sg_y
+ * @type Number
  */
 var mario_sg_y_top;
 /**
@@ -310,7 +310,7 @@ function afficherMap(tableau, zone) {
     for (var lig = 0; lig < tableau.length; lig++) { //length=longueur
         ligne = tableau[lig];
         y = lig * BLOC_HEIGHT;
-        // on affiche les donnees d'une seule zone
+        // on affiche les donnees d'une zone
         for(var col = zone * LONGUEUR_MAP; col < (zone + 1) * LONGUEUR_MAP && col < ligne.length; col++) {
             //console.log(tableau[lig][col]);
             char = tableau[lig][col];
@@ -318,10 +318,12 @@ function afficherMap(tableau, zone) {
             url = (bloc[char] === undefined ? bloc['_'] : bloc[char]); //le triple egal signifie une egalite stricte
             DrawImage(url, x, y, BLOC_WIDTH, BLOC_HEIGHT);
         }
+        // affiche les numéros de ligne
         if (SHOW_COORDINATE) {
             Texte(x + BLOC_WIDTH, y + 2 * BLOC_HEIGHT / 3, lig, "#000000");
         }
     }
+    // affiche les numéros de colonne
     if (SHOW_COORDINATE) {
         lig = tableau.length;
         y = lig * BLOC_HEIGHT;
@@ -386,11 +388,37 @@ function deplacerMario () {
     if (!isMarioASauter || key_pressed !== NO_KEY) {
         keyDeplacer(key_pressed);
 
-        setMarioLigneColonne();
-        
-        DetecterSiMarioDansLeVide();
+        if (isMarioTomberDansUnTrou()) {
+            // initialisation des variables aux conditions de départ du jeu
+            zone_map = 0;
+            isMarioOnGround = false;
+            isMarioASauter = false;
+            mario_sg_x = 0;
+            mario_sg_y = 0;
+            vitesse_mario_x = 0;
+            vitesse_mario_y = 0;
+            mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
+            mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
+            mario_sg_x_prec = mario_sg_x;
+            mario_sg_y_prec = mario_sg_y;
+            mario_id_x_prec = mario_id_x;
+            mario_id_y_prec = mario_id_y;
+            mario_sg_ligne = 0;
+            mario_sg_colonne = 0;
+            mario_id_ligne = mario_sg_ligne + 1;
+            mario_id_colonne = mario_sg_colonne + 1;
+            offset_tableau = zone_map * LONGUEUR_MAP;
+            sens = DROITE;
+            top_depart_chute_mario = false;
 
-        return afficherMario();
+            afficherMap(tableau_map, zone_map);
+        } else {
+            setMarioLigneColonne();
+
+            detecterSiMarioDansLeVide();
+
+            return afficherMario();
+        }
     }
 }
 
@@ -398,7 +426,7 @@ function deplacerMario () {
  * Détecter si mario est dans le vide
  * @returns {undefined}
  */
-function DetecterSiMarioDansLeVide() {
+function detecterSiMarioDansLeVide() {
     
     if (isMarioASauter) {
         var isObstacleV = isObstacleVertical();
@@ -408,6 +436,14 @@ function DetecterSiMarioDansLeVide() {
         }
     }
     
+}
+
+/**
+ * Détecter si mario est tombé dans un trou
+ * @returns {boolean} True s'il est tombé dans un trou, false sinon
+ */
+function isMarioTomberDansUnTrou() {
+    return mario_sg_y > (HAUTEUR_MAP - 1) * BLOC_HEIGHT;
 }
 
 /**
