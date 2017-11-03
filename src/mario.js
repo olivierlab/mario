@@ -144,15 +144,15 @@ FrameRate = 30;
  */
 var top_depart_jeux = Date.now();
 /**
- * Indicateur d'arrivée de mario dans le jau
+ * Indique si mario a touché le sol
  * @type Boolean
  */
-var isMarioOnGame = false;
+var isMarioOnGround = false;
 /**
- * indicateur de la chute de mario
+ * indique si mario est en train de sauter
  * @type Boolean
  */
-var isMarioTomber = false;
+var isMarioASauter = false;
 /**
  * tableau 2D qui contient la map
  * @type Array
@@ -258,6 +258,16 @@ var key_pressed = NO_KEY;
  * @type Number|mario_sg_y
  */
 var mario_sg_y_top;
+/**
+ * Indique si mario a rencontré un obstacle verticalement
+ * @type Boolean
+ */
+var mario_is_obstacle_V = false;
+/**
+ * Indique si mario a rencontré un obstacle horizontalement
+ * @type Boolean
+ */
+var mario_is_obstacle_H = false;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -333,7 +343,7 @@ function faireTomberMario() {
     }
     var temps = (Date.now() - top_depart_chute_mario) / 1000;
     
-    if (isMarioOnGame) {
+    if (isMarioOnGround) {
         mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_top;
         vitesse_mario_y = GRAVITY * temps - V0;
     } else {
@@ -350,8 +360,8 @@ function faireTomberMario() {
     var onGround = deplacerMario();
     
     // détection de l'arrivée de mario dans le jeu
-    if (!isMarioOnGame && onGround) {
-        isMarioOnGame = true;
+    if (!isMarioOnGround && onGround) {
+        isMarioOnGround = true;
     }
     
     return onGround;
@@ -373,13 +383,31 @@ function deplacerMario () {
     };
     
     // quand il ne se passe rien, on ne fait rien !
-    if (!isMarioTomber || key_pressed !== NO_KEY) {
+    if (!isMarioASauter || key_pressed !== NO_KEY) {
         keyDeplacer(key_pressed);
 
         setMarioLigneColonne();
+        
+        DetecterSiMarioDansLeVide();
 
         return afficherMario();
     }
+}
+
+/**
+ * Détecter si mario est dans le vide
+ * @returns {undefined}
+ */
+function DetecterSiMarioDansLeVide() {
+    
+    if (isMarioASauter) {
+        var isObstacleV = isObstacleVertical();
+        if (!isObstacleV) {
+            isMarioOnGround = false;
+            isMarioASauter = false;
+        }
+    }
+    
 }
 
 /**
@@ -403,13 +431,13 @@ function keyDeplacer(key) {
 
        case KEY_UP:
            // quand mario tombe, cette touche doit être désactivée sinon mario rentre dans le décor
-           isMarioTomber = false;
+           isMarioASauter = false;
            break;
 
        case KEY_DOWN:
            //mario_sg_y += PAS_X;
            //vitesse_mario_y = PAS_X * FrameRate;
-           //isMarioTomber = false;
+           //isMarioASauter = false;
            break;
 
        default:
@@ -418,6 +446,7 @@ function keyDeplacer(key) {
     mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
     mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
 }
+
 /**
  * Afficher mario et détecter les obstacles
  * @returns {boolean} False si mario est en vol, True s'il a touche un obstacle
@@ -427,26 +456,26 @@ function afficherMario() {
     DrawImage(bloc[cellule_vide], mario_sg_x_prec, mario_sg_y_prec, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
     
     // afficher mario
-    var isNoObstacleH = isAucunObstacleHorizontal();
-    var isNoObstacleV = isAucunObstacleVertival();
+    var isObstacleH = isObstacleHorizontal();
+    var isObstacleV = isObstacleVertical();
     var url_mario = (sens === DROITE ? mario['petit'] : mario['petit_gauche']);
     
-    if (isNoObstacleH && isNoObstacleV) {
+    if (!isObstacleH && !isObstacleV) {
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
 
         //vitesse_mario_x = 0;
         //vitesse_mario_y = 0;
     } else {
-        if (!isNoObstacleH) {
+        if (isObstacleH) {
             mario_sg_x = (vitesse_mario_x > 0 ? mario_sg_colonne : mario_id_colonne) * BLOC_WIDTH;
             mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
-            vitesse_mario_x = 0;
+            //vitesse_mario_x = 0;
         }
 
-        if (!isNoObstacleV) {
+        if (isObstacleV) {
             mario_sg_y = (vitesse_mario_y > 0 ? mario_sg_ligne : mario_id_ligne) * BLOC_HEIGHT;
             mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
-            vitesse_mario_y = 0;
+            //vitesse_mario_y = 0;
         }
         
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
@@ -458,10 +487,15 @@ function afficherMario() {
     
     mario_sg_x_prec = mario_sg_x;
     mario_sg_y_prec = mario_sg_y;
+    mario_is_obstacle_V = isObstacleV;
+    mario_is_obstacle_H = isObstacleH;
         
     showInformation();
+
+    vitesse_mario_x = 0;
+    vitesse_mario_y = 0;
     
-    return !(isNoObstacleH && isNoObstacleV);
+    return isObstacleH || isObstacleV;
 }
 
 /**
@@ -532,17 +566,23 @@ function setMarioLigneColonne() {
 
 /**
  * Détection d'obstacle horizontal
- * @returns {Boolean} True alors pas d'obstacle, false sinon
+ * @returns {Boolean} True alors obstacle horizontal, false sinon
  */
-function isAucunObstacleHorizontal() {
-    var response = true;
+function isObstacleHorizontal() {
+    var response = false;
     
-    if (vitesse_mario_x > 0) {
-        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] === cellule_vide) 
-                && (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] === cellule_vide);
-    } else if (vitesse_mario_x < 0) {
-        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] === cellule_vide) 
-                && (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] === cellule_vide);
+    if (vitesse_mario_x > 0 && vitesse_mario_y === 0) { // vers la droite
+        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide) 
+                || (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide);
+    } else if (vitesse_mario_x !== 0 && vitesse_mario_y < 0) { // vers le haut à droite ou à gauche
+        response = (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
+                || (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide);
+    } else if (vitesse_mario_x !== 0 && vitesse_mario_y > 0) { // vers le bas à droite ou à gauche
+        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
+                || (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide);
+    } else if (vitesse_mario_x < 0 && vitesse_mario_y === 0) { // vers la gauche
+        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
+                || (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide);
     }
 
     return response;
@@ -550,17 +590,17 @@ function isAucunObstacleHorizontal() {
 
 /**
  * Détection d'obstacle vertical
- * @returns {Boolean} True alors pas d'obstacle, false sinon
+ * @returns {Boolean} True alors obstacle vertical, false sinon
  */
-function isAucunObstacleVertival() {
-    var response = true;
+function isObstacleVertical() {
+    var response = false;
 
-    if (vitesse_mario_y > 0) {
-       response = (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] === cellule_vide) 
-               && (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] === cellule_vide);
-    } else if (vitesse_mario_y < 0) {
-        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] === cellule_vide) 
-                && (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] === cellule_vide);
+    if (vitesse_mario_y >= 0) { // vers le bas à droite ou à gauche
+       response = (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
+               || (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide);
+    } else if (vitesse_mario_y < 0) { // vers le haut à droite ou à gauche
+        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
+                || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide);
     }
 
     return response;
@@ -572,7 +612,7 @@ function isAucunObstacleVertival() {
  */
 function showInformation() {
     if (SHOW_COORDINATE) {
-        RectanglePlein(0, (HAUTEUR_MAP + 1) * BLOC_HEIGHT, 20 * BLOC_WIDTH, 5 * BLOC_HEIGHT, 'yellow');
+        RectanglePlein(0, (HAUTEUR_MAP + 1) * BLOC_HEIGHT, 20 * BLOC_WIDTH, 6 * BLOC_HEIGHT, 'yellow');
         Texte(0, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_x = " + mario_sg_x, "black");
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_colonne = " + mario_sg_colonne, "black");
         Texte(0, (HAUTEUR_MAP + 3) * BLOC_HEIGHT, "mario_sg_y = " + mario_sg_y, "black");
@@ -583,6 +623,8 @@ function showInformation() {
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 5) * BLOC_HEIGHT, "mario_id_ligne = " + mario_id_ligne, "black");
         Texte(0, (HAUTEUR_MAP + 6) * BLOC_HEIGHT, "vitesse_mario_x = " + vitesse_mario_x, "black");
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 6) * BLOC_HEIGHT, "vitesse_mario_y = " + vitesse_mario_y, "black");
+        Texte(0, (HAUTEUR_MAP + 7) * BLOC_HEIGHT, "mario_is_obstacle_V = " + mario_is_obstacle_V, "black");
+        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 7) * BLOC_HEIGHT, "mario_is_obstacle_H = " + mario_is_obstacle_H, "black");
     }
 }
 //</editor-fold>
@@ -605,11 +647,11 @@ function setup() {
  * Gestion du jeu
  * @returns {undefined}
  */
-function draw() {   
-    if (isMarioTomber) {
+function draw() {
+    if (isMarioASauter) {
         deplacerMario();
     } else {
-        isMarioTomber = faireTomberMario();
+        isMarioASauter = faireTomberMario();
     }
 }
 
