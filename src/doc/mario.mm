@@ -81,7 +81,7 @@
 </stylenode>
 </map_styles>
 </hook>
-<hook NAME="AutomaticEdgeColor" COUNTER="27" RULE="ON_BRANCH_CREATION"/>
+<hook NAME="AutomaticEdgeColor" COUNTER="28" RULE="ON_BRANCH_CREATION"/>
 <node TEXT="Lire la map" POSITION="right" ID="ID_1928379183" CREATED="1508796275185" MODIFIED="1508796301406">
 <icon BUILTIN="button_ok"/>
 <edge COLOR="#007c00"/>
@@ -106,18 +106,28 @@
 <node TEXT="Changer de map" ID="ID_934989759" CREATED="1508799873334" MODIFIED="1509374425765">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Faire sauter mario" ID="ID_1924242408" CREATED="1508796348280" MODIFIED="1508799911080">
-<node TEXT="D&#xe9;placement en sautant" ID="ID_1241700910" CREATED="1508799927046" MODIFIED="1508799935032"/>
+<node TEXT="Faire sauter mario" ID="ID_1924242408" CREATED="1508796348280" MODIFIED="1509745533687">
+<icon BUILTIN="button_ok"/>
+<node TEXT="D&#xe9;placement en sautant" ID="ID_1241700910" CREATED="1508799927046" MODIFIED="1509745521448">
+<icon BUILTIN="button_ok"/>
 </node>
+<node TEXT="mario ne colle pas aux obstacles" ID="ID_98121919" CREATED="1509746361201" MODIFIED="1509746378819"/>
+<node TEXT="possibilit&#xe9; d&apos;activer 2 touches en m&#xea;me temps" ID="ID_115206176" CREATED="1509746381137" MODIFIED="1509746403219"/>
+</node>
+<node TEXT="G&#xe9;rer mario dans un objet" ID="ID_133115033" CREATED="1509749540070" MODIFIED="1509750488713"/>
 </node>
 <node TEXT="animer le d&#xe9;placement des personnages" POSITION="right" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1508797166168">
 <edge COLOR="#00ffff"/>
+</node>
+<node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" POSITION="right" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1509750506313">
+<edge COLOR="#7c0000"/>
 </node>
 <node TEXT="Bonus" POSITION="left" ID="ID_608593155" CREATED="1508797101009" MODIFIED="1508797104009">
 <edge COLOR="#ff00ff"/>
 <node TEXT="Ajouter un compteur" ID="ID_1268999964" CREATED="1508797083040" MODIFIED="1508797101026">
 <node TEXT="de temps" ID="ID_1336987994" CREATED="1508797106287" MODIFIED="1508797109032"/>
 <node TEXT="de points" ID="ID_309494826" CREATED="1508797109487" MODIFIED="1508797116145"/>
+<node TEXT="de vie" ID="ID_987595600" CREATED="1509745506422" MODIFIED="1509745509348"/>
 </node>
 <node TEXT="Ajouter une zone de d&#xe9;bugage" ID="ID_818526110" CREATED="1509374444312" MODIFIED="1509374456540">
 <icon BUILTIN="button_ok"/>
