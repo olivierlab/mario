@@ -149,12 +149,12 @@ var top_depart_jeux = Date.now();
  * Indique si mario a touché le sol
  * @type Boolean
  */
-var isMarioOnGround = false;
+var isMarioSautParabolique = false;
 /**
  * indique si mario est en train de sauter
  * @type Boolean
  */
-var isMarioASauter = false;
+var isMarioSurLeSol = false;
 /**
  * tableau 2D qui contient la map
  * @type Array
@@ -250,6 +250,11 @@ var sens = DROITE;
  * @type int
  */
 var top_depart_chute_mario = false;
+/**
+ * indicateur qui marque le lancement du saut ou de la chute de mario
+ * @type boolean
+ */
+var initialiser_saut_mario = true;
 /**
  * Indicateur de touche appuyée
  * @type Boolean
@@ -454,20 +459,21 @@ function afficherMap(tableau, zone) {
 }
 
 /**
- * Animer la chute de mario dans le jeu et le saut de mario
+ * Animer la chute et le saut de mario dans le jeu
  */
 function faireTomberMario() {
-    if (!top_depart_chute_mario) {
+    if (initialiser_saut_mario) {
+        initialiser_saut_mario = false;
         top_depart_chute_mario = Date.now();
         mario_sg_y_top = mario_sg_y;
     }
     var temps = (Date.now() - top_depart_chute_mario) / 1000;
     
-    if (isMarioOnGround) {
+    if (isMarioSautParabolique) {
         mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_top;
         vitesse_mario_y = GRAVITY * temps - V0;
     } else {
-        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2);
+        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2) + mario_sg_y_top;
         vitesse_mario_y = GRAVITY * temps;
     }
     
@@ -495,14 +501,14 @@ function deplacerMario () {
     };
     
     // quand il ne se passe rien, on ne fait rien !
-    if (!isMarioASauter || key_pressed !== NO_KEY) {
+    if (!isMarioSurLeSol || key_pressed !== NO_KEY) {
         keyDeplacer(key_pressed);
 
         if (isMarioTomberDansUnTrou()) {
             // initialisation des variables aux conditions de départ du jeu
             zone_map = 0;
-            isMarioOnGround = false;
-            isMarioASauter = false;
+            isMarioSautParabolique = false;
+            isMarioSurLeSol = false;
             mario_sg_x = 0;
             mario_sg_y = 0;
             vitesse_mario_x = 0;
@@ -519,7 +525,7 @@ function deplacerMario () {
             mario_id_colonne = mario_sg_colonne + 1;
             offset_tableau = zone_map * LONGUEUR_MAP;
             sens = DROITE;
-            top_depart_chute_mario = false;
+            initialiser_saut_mario = true;
 
             afficherMap(tableau_map, zone_map);
         } else {
@@ -528,24 +534,6 @@ function deplacerMario () {
             afficherMario();
         }
     }
-}
-
-/**
- * Détecter si mario est dans le vide
- * @returns {undefined}
- */
-function detecterSiMarioDansLeVide() {
-    
-    if (isMarioASauter) {
-        var isObstacleV = isObstacleVertical();
-        console.log(isObstacleV);
-        if (!isObstacleV) {
-            isMarioOnGround = false;
-            isMarioASauter = false;
-            console.log("dans le vide");
-        }
-    }
-    
 }
 
 /**
@@ -576,15 +564,18 @@ function keyDeplacer(key) {
            break;
 
        case KEY_UP:
-           // quand mario tombe, cette touche doit être désactivée sinon mario rentre dans le décor
-           isMarioASauter = false;
-           mario_sg_y -= 1;
+           // cette touche doit être désactivée uniquement quand mario est sur le sol sinon il saute sans cesse
+           if(isMarioSurLeSol) {
+                isMarioSurLeSol = false;
+                initialiser_saut_mario = true;
+                mario_sg_y -= 1;
+           }
            break;
 
        case KEY_DOWN:
            //mario_sg_y += PAS_X;
            //vitesse_mario_y = PAS_X * FrameRate;
-           //isMarioASauter = false;
+           //isMarioSurLeSol = false;
            break;
 
        default:
@@ -612,23 +603,24 @@ function afficherMario() {
         //vitesse_mario_x = 0;
         //vitesse_mario_y = 0;
     } else {
+        // repositionner mario horizontalement pour qu'il ne pénètre pas le bloc
         if (isObstacleH) {
             mario_sg_x = (vitesse_mario_x > 0 ? mario_sg_colonne : mario_id_colonne) * BLOC_WIDTH;
             mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
-            //vitesse_mario_x = 0;
         }
 
+        // repositionner mario verticalement pour qu'il ne pénètre pas le bloc
         if (isObstacleV) {
             mario_sg_y = (vitesse_mario_y > 0 ? mario_sg_ligne : mario_id_ligne) * BLOC_HEIGHT;
             mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
-            //vitesse_mario_y = 0;
         }
         
         DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-
-        top_depart_chute_mario = false;
         
         setMarioLigneColonne();
+
+        // on reverifie si mario est dans le vide
+        isObstacleV = isObstacleVertical();        
     }
     
     mario_sg_x_prec = mario_sg_x;
@@ -636,13 +628,23 @@ function afficherMario() {
     // ne sert que pour information !
     mario_is_obstacle_V = isObstacleV;
     mario_is_obstacle_H = isObstacleH;
-        
-    // détection de l'arrivée de mario dans le jeu
-    if (!isMarioOnGround && isObstacleV) {
-        isMarioOnGround = true;
+
+   
+    // détection de l'arrivée de mario dans le jeu ou de la chute d'un bloc
+    if (!isMarioSautParabolique && isObstacleV) {
+        isMarioSautParabolique = true;
+        initialiser_saut_mario = true;
     }
 
-    isMarioASauter = isObstacleV && (vitesse_mario_y >= 0);
+    var isMarioSurLeSolAvant = isMarioSurLeSol;
+    
+    isMarioSurLeSol = isObstacleV && (vitesse_mario_y >= 0);
+   
+    // mario marche dans le vide || la tête de mario touche un obstacle
+    if ((isMarioSurLeSolAvant && !isMarioSurLeSol) || (isObstacleV && !isMarioSurLeSol)) {
+        isMarioSautParabolique = false;
+        initialiser_saut_mario = true;
+    }
     
     showInformation();
 
@@ -750,11 +752,13 @@ function isObstacleVertical() {
     if (vitesse_mario_y >= 0) { // vers le bas à droite ou à gauche
        response = (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
                || (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
-               || (   tableau_map[mario_sg_ligne+1][offset_tableau + mario_sg_colonne] !== cellule_vide 
-                   || tableau_map[mario_sg_ligne+1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre la base de mario et l'obstacle est nulle
+               || (   tableau_map[mario_sg_ligne + 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
+                   || tableau_map[mario_sg_ligne + 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre la base de mario et l'obstacle est nulle
     } else if (vitesse_mario_y < 0) { // vers le haut à droite ou à gauche
         response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
-                || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide);
+                || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
+                || (   tableau_map[mario_id_ligne - 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
+                   || tableau_map[mario_id_ligne - 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre le sommet de mario et l'obstacle est nulle
     }
 
     return response;
@@ -766,7 +770,7 @@ function isObstacleVertical() {
  */
 function showInformation() {
     if (SHOW_COORDINATE) {
-        RectanglePlein(0, (HAUTEUR_MAP + 1) * BLOC_HEIGHT, 20 * BLOC_WIDTH, 7 * BLOC_HEIGHT, 'yellow');
+        RectanglePlein(0, (HAUTEUR_MAP + 1) * BLOC_HEIGHT, 20 * BLOC_WIDTH, 8 * BLOC_HEIGHT, 'yellow');
         Texte(0, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_x = " + mario_sg_x, "black");
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 2) * BLOC_HEIGHT, "mario_sg_colonne = " + mario_sg_colonne, "black");
         Texte(0, (HAUTEUR_MAP + 3) * BLOC_HEIGHT, "mario_sg_y = " + mario_sg_y, "black");
@@ -779,8 +783,10 @@ function showInformation() {
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 6) * BLOC_HEIGHT, "vitesse_mario_y = " + vitesse_mario_y, "black");
         Texte(0, (HAUTEUR_MAP + 7) * BLOC_HEIGHT, "mario_is_obstacle_V = " + mario_is_obstacle_V, "black");
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 7) * BLOC_HEIGHT, "mario_is_obstacle_H = " + mario_is_obstacle_H, "black");
-        Texte(0, (HAUTEUR_MAP + 8) * BLOC_HEIGHT, "isMarioASauter = " + isMarioASauter, "black");
-        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 8) * BLOC_HEIGHT, "isMarioOnGround = " + isMarioOnGround, "black");
+        Texte(0, (HAUTEUR_MAP + 8) * BLOC_HEIGHT, "isMarioSurLeSol = " + isMarioSurLeSol, "black");
+        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 8) * BLOC_HEIGHT, "isMarioSautParabolique = " + isMarioSautParabolique, "black");
+        Texte(0, (HAUTEUR_MAP + 9) * BLOC_HEIGHT, "top_depart_chute_mario = " + top_depart_chute_mario, "black");
+        Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 9) * BLOC_HEIGHT, "initialiser_saut_mario = " + initialiser_saut_mario, "black");
     }
 }
 //</editor-fold>
@@ -804,9 +810,8 @@ function setup() {
  * @returns {undefined}
  */
 function draw() {
-    if (isMarioASauter) {
+    if (isMarioSurLeSol) {
         deplacerMario();
-        detecterSiMarioDansLeVide();
     } else {
         faireTomberMario();
     }
