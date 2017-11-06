@@ -131,6 +131,16 @@ var mario = {
     'grand_saute' : 'http://www.thevideogamegallery.com/data/thumbs/790px/0021/tVGG_21561.jpg'
 };
 /**
+ * Tableau mémorisant les touches actives du clavier
+ * @type Array
+ */
+var isToucheActive = {
+    'gauche' : false,
+    'droite' : false,
+    'haut' : false,
+    'bas' : false
+};
+/**
  * zone de la map a afficher (0 = 1er ecran, 1 = 2eme ecran, ...)
  * @type Number
  */
@@ -146,12 +156,12 @@ FrameRate = 30;
  */
 var top_depart_jeux = Date.now();
 /**
- * Indique si mario a touché le sol
+ * Indique si mario fait un saut parabolique (true) ou une chute libre (false)
  * @type Boolean
  */
 var isMarioSautParabolique = false;
 /**
- * indique si mario est en train de sauter
+ * indique si mario est sur le sol (true) ou en train de sauter (false)
  * @type Boolean
  */
 var isMarioSurLeSol = false;
@@ -246,20 +256,15 @@ var offset_tableau = zone_map * LONGUEUR_MAP;
  */
 var sens = DROITE;
 /**
- * Timestamp qui marque le top depart de la chute de mario ou false si non initialisé
+ * Timestamp qui marque le top depart de la chute ou du saut de mario
  * @type int
  */
-var top_depart_chute_mario = false;
+var top_depart_chute_mario;
 /**
  * indicateur qui marque le lancement du saut ou de la chute de mario
  * @type boolean
  */
 var initialiser_saut_mario = true;
-/**
- * Indicateur de touche appuyée
- * @type Boolean
- */
-var key_pressed = NO_KEY;
 /**
  * Position initiale en y de mario au départ du saut
  * @type Number
@@ -397,6 +402,33 @@ class class_mario {
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
 
 /**
+ * Initialisation des variables aux conditions de départ du jeu
+ * @returns {undefined}
+ */
+function initialiserJeu() {
+    zone_map = 0;
+    isMarioSautParabolique = false;
+    isMarioSurLeSol = false;
+    mario_sg_x = 0;
+    mario_sg_y = 0;
+    vitesse_mario_x = 0;
+    vitesse_mario_y = 0;
+    mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
+    mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
+    mario_sg_x_prec = mario_sg_x;
+    mario_sg_y_prec = mario_sg_y;
+    mario_id_x_prec = mario_id_x;
+    mario_id_y_prec = mario_id_y;
+    mario_sg_ligne = 0;
+    mario_sg_colonne = 0;
+    mario_id_ligne = mario_sg_ligne + 1;
+    mario_id_colonne = mario_sg_colonne + 1;
+    offset_tableau = zone_map * LONGUEUR_MAP;
+    sens = DROITE;
+    initialiser_saut_mario = true;    
+}
+
+/**
  * Lire la chaine de caractere map et la stocker dans un tableau
  * @param {string} map La chaine de caractere contenant la map
  * @returns {Array} Le tableau contenant la map
@@ -472,7 +504,7 @@ function faireSauterMario() {
     if (isMarioSautParabolique) {
         mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_initiale;
         vitesse_mario_y = GRAVITY * temps - V0;
-    } else {
+    } else { // chute libre
         mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2) + mario_sg_y_initiale;
         vitesse_mario_y = GRAVITY * temps;
     }
@@ -490,42 +522,16 @@ function faireSauterMario() {
  * Deplacer mario dans le jeu
  */
 function deplacerMario () {
-    // est déclanché UNIQUEMENT quand on lache une touche !
-    window.onkeyup = function (e) {
-        key_pressed = NO_KEY; // détection du relachement de touche
-    };
-
-    // est déclanché UNIQUEMENT quand on appuie une touche !
-    window.onkeydown = function (e) {        
-        key_pressed = e.keyCode || e.which; // détection de la touche appuyée
-    };
+    detecterRelachementTouche();
     
-    // quand il ne se passe rien, on ne fait rien !
-    if (!isMarioSurLeSol || key_pressed !== NO_KEY) {
-        keyDeplacer(key_pressed);
+    detecterAppuiSurTouche();
+    
+    // on ne fait rien quand il ne se passe rien !
+    if (!isMarioSurLeSol || isOneToucheActive()) {
+        keyDeplacer();
 
         if (isMarioTomberDansUnTrou()) {
-            // initialisation des variables aux conditions de départ du jeu
-            zone_map = 0;
-            isMarioSautParabolique = false;
-            isMarioSurLeSol = false;
-            mario_sg_x = 0;
-            mario_sg_y = 0;
-            vitesse_mario_x = 0;
-            vitesse_mario_y = 0;
-            mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
-            mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
-            mario_sg_x_prec = mario_sg_x;
-            mario_sg_y_prec = mario_sg_y;
-            mario_id_x_prec = mario_id_x;
-            mario_id_y_prec = mario_id_y;
-            mario_sg_ligne = 0;
-            mario_sg_colonne = 0;
-            mario_id_ligne = mario_sg_ligne + 1;
-            mario_id_colonne = mario_sg_colonne + 1;
-            offset_tableau = zone_map * LONGUEUR_MAP;
-            sens = DROITE;
-            initialiser_saut_mario = true;
+            initialiserJeu();
 
             afficherMap(tableau_map, zone_map);
         } else {
@@ -534,6 +540,86 @@ function deplacerMario () {
             afficherMario();
         }
     }
+}
+
+/**
+ * Détecter le relachement de touche
+ * @returns {undefined}
+ */
+function detecterRelachementTouche() {
+    // est déclanché UNIQUEMENT quand on lache une touche !
+    window.onkeyup = function (e) {
+        var key = e.keyCode || e.which; // détection de la touche relachée
+        
+        switch (key) {
+           case KEY_RIGHT:
+               isToucheActive['droite'] = false;
+               break;
+
+           case KEY_LEFT:
+               isToucheActive['gauche'] = false;
+               break;
+
+           case KEY_UP:
+               isToucheActive['haut'] = false;
+               break;
+
+           case KEY_DOWN:
+               isToucheActive['bas'] = false;
+               break;
+
+           default:
+               break;
+        }
+    };    
+}
+
+/**
+ * Détecter l'appui sur une touche
+ * @returns {undefined}
+ */
+function detecterAppuiSurTouche() {
+    // est déclanché UNIQUEMENT quand on appuie une touche !
+    window.onkeydown = function (e) {        
+        var key = e.keyCode || e.which; // détection de la touche appuyée
+        
+        switch (key) {
+           case KEY_RIGHT:
+               isToucheActive['droite'] = true;               
+               break;
+
+           case KEY_LEFT:
+               isToucheActive['gauche'] = true;
+               break;
+
+           case KEY_UP:
+               // cette touche doit être désactivée uniquement quand mario est sur le sol sinon il saute sans cesse
+               if(isMarioSurLeSol) {
+                   isToucheActive['haut'] = true;
+               }
+               break;
+
+           case KEY_DOWN:
+               isToucheActive['bas'] = true;
+               break;
+
+           default:
+               break;
+        }
+    };   
+}
+
+/**
+ * Vérifie si une touche est active
+ * @returns {Boolean} True si une touche est active, false sinon
+ */
+function isOneToucheActive() {
+    for (var key in isToucheActive) {
+        if (isToucheActive[key]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -546,41 +632,37 @@ function isMarioTomberDansUnTrou() {
 
 /**
  * Déplace mario en fonction de la touche appuyée
- * @param {type} key Touche appuyée
  * @returns {undefined}
  */
-function keyDeplacer(key) {
-    switch (key) {
-       case KEY_RIGHT:
-           sens = DROITE;
-           mario_sg_x += PAS_X;
-           vitesse_mario_x = PAS_X * FrameRate;
-           break;
+function keyDeplacer() {
 
-       case KEY_LEFT:
-           sens = GAUCHE;
-           mario_sg_x -= PAS_X;
-           vitesse_mario_x = -PAS_X * FrameRate;
-           break;
-
-       case KEY_UP:
-           // cette touche doit être désactivée uniquement quand mario est sur le sol sinon il saute sans cesse
-           if(isMarioSurLeSol) {
-                isMarioSurLeSol = false;
-                initialiser_saut_mario = true;
-                mario_sg_y -= 1;
-           }
-           break;
-
-       case KEY_DOWN:
-           //mario_sg_y += PAS_X;
-           //vitesse_mario_y = PAS_X * FrameRate;
-           //isMarioSurLeSol = false;
-           break;
-
-       default:
-           break;
+    if (isToucheActive['droite']) {
+         sens = DROITE;
+         mario_sg_x += PAS_X;
+         vitesse_mario_x = PAS_X * FrameRate;
     }
+    
+    if (isToucheActive['gauche']) {
+        sens = GAUCHE;
+        mario_sg_x -= PAS_X;
+        vitesse_mario_x = -PAS_X * FrameRate;
+    }
+    
+    if (isToucheActive['haut']) {
+        // cette touche doit être désactivée uniquement quand mario est sur le sol sinon il saute sans cesse
+        if(isMarioSurLeSol) {
+             isMarioSurLeSol = false;
+             initialiser_saut_mario = true;
+             mario_sg_y -= 1;
+        }
+    }
+    
+    if (isToucheActive['bas']) {
+        //mario_sg_y += PAS_X;
+        //vitesse_mario_y = PAS_X * FrameRate;
+        //isMarioSurLeSol = false;
+    }
+
     mario_id_x = mario_sg_x + MARIO_WIDTH_SMALL;
     mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
 }
@@ -597,12 +679,7 @@ function afficherMario() {
     var isObstacleV = isObstacleVertical();
     var url_mario = (sens === DROITE ? mario['petit'] : mario['petit_gauche']);
     
-    if (!isObstacleH && !isObstacleV) {
-        DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-
-        //vitesse_mario_x = 0;
-        //vitesse_mario_y = 0;
-    } else {
+    if (isObstacleH || isObstacleV) {
         // repositionner mario horizontalement pour qu'il ne pénètre pas le bloc
         if (isObstacleH) {
             mario_sg_x = (vitesse_mario_x > 0 ? mario_sg_colonne : mario_id_colonne) * BLOC_WIDTH;
@@ -615,13 +692,14 @@ function afficherMario() {
             mario_id_y = mario_sg_y + MARIO_HEIGHT_SMALL;
         }
         
-        DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
-        
         setMarioLigneColonne();
 
-        // on reverifie si mario est dans le vide
+        // on reverifie si mario est dans le vide sinon il ne tombe pas quand il touche un obstacle vertical
         isObstacleV = isObstacleVertical();        
     }
+
+    // dessiner le nouveau mario
+    DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
     
     mario_sg_x_prec = mario_sg_x;
     mario_sg_y_prec = mario_sg_y;
@@ -797,6 +875,8 @@ function showInformation() {
  */
 function setup() {
     console.log('----------------- NEW RUN ------------------------');
+
+    initialiserJeu();
 
     var map = readFile(MAP);
 
