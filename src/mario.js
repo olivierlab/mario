@@ -261,10 +261,10 @@ var initialiser_saut_mario = true;
  */
 var key_pressed = NO_KEY;
 /**
- * Position de départ en y de mario au moment du saut
+ * Position initiale en y de mario au départ du saut
  * @type Number
  */
-var mario_sg_y_top;
+var mario_sg_y_initiale;
 /**
  * Indique si mario a rencontré un obstacle verticalement
  * @type Boolean
@@ -461,19 +461,19 @@ function afficherMap(tableau, zone) {
 /**
  * Animer la chute et le saut de mario dans le jeu
  */
-function faireTomberMario() {
+function faireSauterMario() {
     if (initialiser_saut_mario) {
         initialiser_saut_mario = false;
         top_depart_chute_mario = Date.now();
-        mario_sg_y_top = mario_sg_y;
+        mario_sg_y_initiale = mario_sg_y;
     }
     var temps = (Date.now() - top_depart_chute_mario) / 1000;
     
     if (isMarioSautParabolique) {
-        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_top;
+        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2 - V0 * temps) + mario_sg_y_initiale;
         vitesse_mario_y = GRAVITY * temps - V0;
     } else {
-        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2) + mario_sg_y_top;
+        mario_sg_y = Math.floor(GRAVITY * Math.pow(temps, 2) / 2) + mario_sg_y_initiale;
         vitesse_mario_y = GRAVITY * temps;
     }
     
@@ -813,7 +813,7 @@ function draw() {
     if (isMarioSurLeSol) {
         deplacerMario();
     } else {
-        faireTomberMario();
+        faireSauterMario();
     }
 }
 
