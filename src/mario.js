@@ -447,7 +447,7 @@ function initialiserJeu() {
 }
 
 /**
- * Lire la chaine de caractere map et la stocker dans un tableau
+ * Lire la chaine de caractere map et la stocker dans un tableau. Charger les personnages.
  * @param {string} map La chaine de caractere contenant la map
  * @returns {Array} Le tableau contenant la map
  */
@@ -483,24 +483,34 @@ function chargerTableau(map) {
  * @returns {String} Le caractère à insérer dans la map
  */
 function recupererPersonnages(lig, col, carac) {
-    var carac_map = "";
+    var carac_map = carac;
     switch (carac) {
         case "c": // champignon
             var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
-            var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : personnages[zone_map_perso].length);
+            var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
+            //console.log('zone_map_perso = ' + zone_map_perso + ' - num_perso = ' + num_perso);
             if (num_perso === 0) {
                 personnages[zone_map_perso] = {};
             }
-            personnages[zone_map_perso][num_perso] = {"type" : carac, "x" : col, "y" : lig };
+            personnages[zone_map_perso][num_perso] = {"type" : carac, "x" : (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH, "y" : lig * BLOC_HEIGHT};
+            
             carac_map = "~"; // perso remplacer par un bloc vide sur la map
             break;
 
         default:
-            carac_map = carac;
             break;
     }
     
     return carac_map;
+}
+
+function afficherPersonnages() {
+    //var nb_perso = Object.keys(personnages[zone_map]).length;
+    for (var personnage in personnages[zone_map]) {
+        //console.log(personnages[zone_map][personnage]["x"]);
+        DrawImage(bloc[personnages[zone_map][personnage]["type"]], personnages[zone_map][personnage]["x"], personnages[zone_map][personnage]["y"], BLOC_WIDTH, BLOC_HEIGHT);
+    }
+    //personnages[zone_map][num_perso];
 }
 
 /**
@@ -749,7 +759,6 @@ function afficherMario() {
     // ne sert que pour information !
     mario_is_obstacle_V = isObstacleV;
     mario_is_obstacle_H = isObstacleH;
-
    
     // détection de l'arrivée de mario dans le jeu ou de la chute d'un bloc
     if (!isMarioSautParabolique && isObstacleV) {
@@ -929,9 +938,9 @@ function setup() {
 
     tableau_map = chargerTableau(map);
     
-    // todo : extraction des personnages de la map dans un tableau
-    
     afficherMap(tableau_map, zone_map);
+    
+    afficherPersonnages();
 }
 
 /**
