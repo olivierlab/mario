@@ -131,6 +131,9 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
+<node TEXT="Changer d&apos;image quand mario saute" ID="ID_477954771" CREATED="1512249020780" MODIFIED="1512249035187">
+<icon BUILTIN="button_ok"/>
+</node>
 </node>
 <node TEXT="Int&#xe9;raction avec personnages" ID="ID_1003547860" CREATED="1512227245412" MODIFIED="1512227275293">
 <node TEXT="si personnage touch&#xe9; de c&#xf4;t&#xe9; alors perso disparait et mario perd un point de vie" ID="ID_1971019911" CREATED="1512228547861" MODIFIED="1512228609774"/>

@@ -123,12 +123,12 @@ var bloc = {
  * @type Array
  */
 var mario = {
-    'petit' : 'https://vignette.wikia.nocookie.net/mario/images/3/32/8_Bit_Mario.png/revision/latest?cb=20120602231304',
-    'petit_gauche' : 'https://t3.rbxcdn.com/fcedf49f6eaf2176e2f788e568304f57',
-    'petit_saute' : 'https://i.pinimg.com/originals/36/26/24/362624d9b105d5af3a0c3751659553e1.png',
-    'petit_saute_gauche' : 'https://s-media-cache-ak0.pinimg.com/originals/58/cb/b4/58cbb4afc462d0002f802dc11c7f040a.jpg',
-    'grand' : 'http://img4.wikia.nocookie.net/__cb20130907061200/lawl-stadium/images/4/4d/8-Bit_Mario.png',
-    'grand_saute' : 'http://www.thevideogamegallery.com/data/thumbs/790px/0021/tVGG_21561.jpg'
+    'petit' : 'http://olivier.leliboux.free.fr/mario/img/mario_petit.png',
+    'petit_gauche' : 'http://olivier.leliboux.free.fr/mario/img/mario_petit_gauche.png',
+    'petit_saute' : 'http://olivier.leliboux.free.fr/mario/img/mario_petit_saute.png',
+    'petit_saute_gauche' : 'http://olivier.leliboux.free.fr/mario/img/mario_petit_saute-gauche.png',
+    'grand' : 'http://olivier.leliboux.free.fr/mario/img/mario_grand.png',
+    'grand_gauche' : 'http://olivier.leliboux.free.fr/mario/img/mario_grand_gauche.png'
 };
 /**
  * Liste des personnages par zone de la map
@@ -757,7 +757,6 @@ function afficherMario() {
     // afficher mario
     var isObstacleH = isObstacleHorizontal();
     var isObstacleV = isObstacleVertical();
-    var url_mario = (sens === DROITE ? mario['petit'] : mario['petit_gauche']);
     
     if (isObstacleH || isObstacleV) {
         // repositionner mario horizontalement pour qu'il ne pénètre pas le bloc
@@ -778,6 +777,9 @@ function afficherMario() {
         isObstacleV = isObstacleVertical();        
     }
 
+    var url_mario = (sens === DROITE 
+                         ? (isMarioSurLeSol || isObstacleV ? mario['petit'] : mario['petit_saute']) 
+                         : (isMarioSurLeSol || isObstacleV ? mario['petit_gauche'] : mario['petit_saute_gauche']));
     // dessiner le nouveau mario
     DrawImage(url_mario, mario_sg_x, mario_sg_y, MARIO_WIDTH_SMALL, MARIO_HEIGHT_SMALL);
     
