@@ -492,7 +492,15 @@ function recupererPersonnages(lig, col, carac) {
             if (num_perso === 0) {
                 personnages[zone_map_perso] = {};
             }
-            personnages[zone_map_perso][num_perso] = {"type" : carac, "x" : (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH, "y" : lig * BLOC_HEIGHT};
+            var x = (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH;
+            var y = lig * BLOC_HEIGHT;
+            personnages[zone_map_perso][num_perso] = {
+                "type" : carac,
+                "x_prec" : x,
+                "x" : x,
+                "y_prec" : y,
+                "y" : y
+            };
             
             carac_map = "~"; // perso remplacer par un bloc vide sur la map
             break;
@@ -504,13 +512,17 @@ function recupererPersonnages(lig, col, carac) {
     return carac_map;
 }
 
+/**
+ * Affichage des personnages de la map en cours
+ */
 function afficherPersonnages() {
-    //var nb_perso = Object.keys(personnages[zone_map]).length;
     for (var personnage in personnages[zone_map]) {
-        //console.log(personnages[zone_map][personnage]["x"]);
+        // effacer position prec du personnage
+        DrawImage(bloc[cellule_vide], personnages[zone_map][personnage]["x_prec"], personnages[zone_map][personnage]["y_prec"], BLOC_WIDTH, BLOC_HEIGHT);
+
+        // afficher nouvelle eposition du personnage
         DrawImage(bloc[personnages[zone_map][personnage]["type"]], personnages[zone_map][personnage]["x"], personnages[zone_map][personnage]["y"], BLOC_WIDTH, BLOC_HEIGHT);
     }
-    //personnages[zone_map][num_perso];
 }
 
 /**
@@ -592,6 +604,21 @@ function deplacerMario () {
         setMarioLigneColonne();
 
         afficherMario();
+    }
+}
+
+/**
+ * Déplacement des personnages de la map en cours
+ */
+function deplacerPersonnages () {
+    for (var personnage in personnages[zone_map]) {
+        // Mémorisation de la position précédente
+        personnages[zone_map][personnage]["x_prec"] = personnages[zone_map][personnage]["x"];
+        personnages[zone_map][personnage]["y_prec"] = personnages[zone_map][personnage]["y"];
+        
+        // Nouvelle position
+        personnages[zone_map][personnage]["x"] += BLOC_WIDTH / 10;
+        personnages[zone_map][personnage]["y"] += 0;
     }
 }
 
@@ -948,7 +975,10 @@ function setup() {
  */
 function draw() {
     // todo : gestion des personnages de la zone de map affichée
-
+    deplacerPersonnages();
+    afficherPersonnages();
+    
+    
     // gestion de mario
     if (isMarioSurLeSol) {
         deplacerMario();

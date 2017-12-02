@@ -132,7 +132,10 @@
 </node>
 </node>
 </node>
-<node TEXT="Int&#xe9;raction avec personnages" ID="ID_1003547860" CREATED="1512227245412" MODIFIED="1512227275293"/>
+<node TEXT="Int&#xe9;raction avec personnages" ID="ID_1003547860" CREATED="1512227245412" MODIFIED="1512227275293">
+<node TEXT="si personnage touch&#xe9; de c&#xf4;t&#xe9; alors perso disparait et mario perd un point de vie" ID="ID_1971019911" CREATED="1512228547861" MODIFIED="1512228609774"/>
+<node TEXT="si personnage touch&#xe9; par le haut alors perso disparait et mario gagne des points" ID="ID_1163359351" CREATED="1512228612541" MODIFIED="1512228639814"/>
+</node>
 </node>
 <node TEXT="Personnage" POSITION="right" ID="ID_1771610630" CREATED="1512207610784" MODIFIED="1512207615018">
 <edge COLOR="#007c7c"/>
@@ -142,7 +145,9 @@
 <node TEXT="Afficher les personnages" ID="ID_1070322046" CREATED="1512224697241" MODIFIED="1512227335816">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Animer le d&#xe9;placement" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1512220694633"/>
+<node TEXT="Animer le d&#xe9;placement" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1512228490148">
+<icon BUILTIN="button_ok"/>
+</node>
 <node TEXT="D&#xe9;tecter les obstacles" ID="ID_1401075430" CREATED="1512227250940" MODIFIED="1512227258678"/>
 </node>
 <node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">
