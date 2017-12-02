@@ -81,29 +81,42 @@
 </stylenode>
 </map_styles>
 </hook>
-<hook NAME="AutomaticEdgeColor" COUNTER="28" RULE="ON_BRANCH_CREATION"/>
-<node TEXT="Lire la map" POSITION="right" ID="ID_1928379183" CREATED="1508796275185" MODIFIED="1508796301406">
-<icon BUILTIN="button_ok"/>
+<hook NAME="AutomaticEdgeColor" COUNTER="33" RULE="ON_BRANCH_CREATION"/>
+<node TEXT="Map" POSITION="right" ID="ID_1559953622" CREATED="1512207533657" MODIFIED="1512207538634">
 <edge COLOR="#007c00"/>
-</node>
-<node TEXT="Charger la map dans un tableau" POSITION="right" ID="ID_898751898" CREATED="1508796303241" MODIFIED="1508796331093">
+<node TEXT="Lire la map" ID="ID_1928379183" CREATED="1508796275185" MODIFIED="1512207548506">
 <icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="Charger la map dans un tableau" ID="ID_898751898" CREATED="1508796303241" MODIFIED="1512207546372">
+<icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="Afficher la map zone par zone" ID="ID_474413802" CREATED="1508796316896" MODIFIED="1512207544389">
+<icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="Changer de map" ID="ID_1769249163" CREATED="1512207512441" MODIFIED="1512207542056"/>
+</node>
+<node TEXT="Hero" POSITION="right" ID="ID_428931536" CREATED="1512207581016" MODIFIED="1512207588754">
 <edge COLOR="#7c007c"/>
-</node>
-<node TEXT="Afficher la map zone par zone" POSITION="right" ID="ID_474413802" CREATED="1508796316896" MODIFIED="1508799713327">
+<node TEXT="Faire tomber mario dans la map" ID="ID_1776137652" CREATED="1508796333824" MODIFIED="1512207593273">
 <icon BUILTIN="button_ok"/>
-<edge COLOR="#007c7c"/>
 </node>
-<node TEXT="Faire tomber mario dans la map" POSITION="right" ID="ID_1776137652" CREATED="1508796333824" MODIFIED="1509374408493">
-<icon BUILTIN="button_ok"/>
-<edge COLOR="#7c7c00"/>
-</node>
-<node TEXT="faire bouger mario" POSITION="right" ID="ID_1328643436" CREATED="1508796357136" MODIFIED="1508799896128">
-<edge COLOR="#0000ff"/>
+<node TEXT="faire bouger mario" ID="ID_1328643436" CREATED="1508796357136" MODIFIED="1512207595526">
 <node TEXT="Int&#xe9;ragir avec les obstacles" ID="ID_769524741" CREATED="1508797187430" MODIFIED="1509374418956">
 <icon BUILTIN="button_ok"/>
+<node TEXT="G&#xe9;rer mario dans un objet" ID="ID_133115033" CREATED="1509749540070" MODIFIED="1512220649077">
+<icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Changer de map" ID="ID_934989759" CREATED="1508799873334" MODIFIED="1509374425765">
+</node>
+<node TEXT="L&apos;image de mario change avec le sens de d&#xe9;placement" ID="ID_979456956" CREATED="1512220652054" MODIFIED="1512220681256">
+<icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="Changer de zone dans la map" ID="ID_934989759" CREATED="1508799873334" MODIFIED="1512206832539">
+<icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="Retour au d&#xe9;but quand mario tombe dans un trou" ID="ID_934097341" CREATED="1512217825365" MODIFIED="1512219363907">
+<icon BUILTIN="button_ok"/>
+</node>
+<node TEXT="mario ne sort pas de la map par le haut" ID="ID_999554034" CREATED="1512219422652" MODIFIED="1512219449440">
 <icon BUILTIN="button_ok"/>
 </node>
 <node TEXT="Faire sauter mario" ID="ID_1924242408" CREATED="1508796348280" MODIFIED="1509745533687">
@@ -111,16 +124,23 @@
 <node TEXT="D&#xe9;placement en sautant" ID="ID_1241700910" CREATED="1508799927046" MODIFIED="1509745521448">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="mario ne colle pas aux obstacles" ID="ID_98121919" CREATED="1509746361201" MODIFIED="1509746378819"/>
-<node TEXT="possibilit&#xe9; d&apos;activer 2 touches en m&#xea;me temps" ID="ID_115206176" CREATED="1509746381137" MODIFIED="1509746403219"/>
+<node TEXT="mario ne colle pas aux obstacles" ID="ID_98121919" CREATED="1509746361201" MODIFIED="1512217807524">
+<icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="G&#xe9;rer mario dans un objet" ID="ID_133115033" CREATED="1509749540070" MODIFIED="1509750488713"/>
+<node TEXT="possibilit&#xe9; d&apos;activer 2 touches en m&#xea;me temps" ID="ID_115206176" CREATED="1509746381137" MODIFIED="1512206729021">
+<icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="animer le d&#xe9;placement des personnages" POSITION="right" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1508797166168">
-<edge COLOR="#00ffff"/>
 </node>
-<node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" POSITION="right" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1509750506313">
-<edge COLOR="#7c0000"/>
+</node>
+</node>
+<node TEXT="Personnage" POSITION="right" ID="ID_1771610630" CREATED="1512207610784" MODIFIED="1512207615018">
+<edge COLOR="#007c7c"/>
+<node TEXT="Charger les personnages" ID="ID_1851766984" CREATED="1512219554250" MODIFIED="1512219561276"/>
+<node TEXT="Animer le d&#xe9;placement" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1512220694633"/>
+</node>
+<node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">
+<edge COLOR="#7c7c00"/>
+<node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1512207606005"/>
 </node>
 <node TEXT="Bonus" POSITION="left" ID="ID_608593155" CREATED="1508797101009" MODIFIED="1508797104009">
 <edge COLOR="#ff00ff"/>
@@ -129,6 +149,11 @@
 <node TEXT="de points" ID="ID_309494826" CREATED="1508797109487" MODIFIED="1508797116145"/>
 <node TEXT="de vie" ID="ID_987595600" CREATED="1509745506422" MODIFIED="1509745509348"/>
 </node>
+<node TEXT="Ajouter des boutons" ID="ID_853500884" CREATED="1512206763908" MODIFIED="1512206783887">
+<node TEXT="mode terre" ID="ID_1193611921" CREATED="1512206785538" MODIFIED="1512206790835"/>
+<node TEXT="mode lune" ID="ID_1083718714" CREATED="1512206791449" MODIFIED="1512206794395"/>
+</node>
+<node TEXT="Ajouter du son" ID="ID_304462250" CREATED="1512206801633" MODIFIED="1512206807699"/>
 <node TEXT="Ajouter une zone de d&#xe9;bugage" ID="ID_818526110" CREATED="1509374444312" MODIFIED="1509374456540">
 <icon BUILTIN="button_ok"/>
 </node>

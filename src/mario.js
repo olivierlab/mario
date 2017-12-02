@@ -109,14 +109,14 @@ var cellule_vide = "~";
  * @type Array
  */
 var bloc = {
-    '~' : 'http://www.annliz-bonin.com/wp-content/uploads/2017/05/carre%CC%81-blanc-300x300.png',
-    '?' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516',
-    'b' : 'https://s3.amazonaws.com/spoonflower/public/design_thumbnails/0396/3573/rbricks_large_shop_preview.png',
-    '0' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516',
-    'B' : 'http://oi48.tinypic.com/30my7tx.jpg',
-    't' : 'http://www.clker.com/cliparts/T/R/h/S/4/i/a-green-cartoon-pipe-hi.png',
-    'c' : 'https://t7.rbxcdn.com/b885beb8ed89feb035643aff4785115f',
-    '_' : 'https://t3.rbxcdn.com/1977bb7bbfc6b959cf6556daf6381793'
+    '~' : 'http://www.annliz-bonin.com/wp-content/uploads/2017/05/carre%CC%81-blanc-300x300.png', // bloc vide
+    '?' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516', // cube surprise
+    'b' : 'https://s3.amazonaws.com/spoonflower/public/design_thumbnails/0396/3573/rbricks_large_shop_preview.png', // brique
+    '0' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516', // ?
+    'B' : 'http://oi48.tinypic.com/30my7tx.jpg', // Bloc de roche
+    't' : 'http://www.clker.com/cliparts/T/R/h/S/4/i/a-green-cartoon-pipe-hi.png', // tube
+    'c' : 'https://t7.rbxcdn.com/b885beb8ed89feb035643aff4785115f', // champignon
+    '_' : 'https://t3.rbxcdn.com/1977bb7bbfc6b959cf6556daf6381793' // sol
 };
 /**
  * Les differentes representations de mario
@@ -130,6 +130,24 @@ var mario = {
     'grand' : 'http://img4.wikia.nocookie.net/__cb20130907061200/lawl-stadium/images/4/4d/8-Bit_Mario.png',
     'grand_saute' : 'http://www.thevideogamegallery.com/data/thumbs/790px/0021/tVGG_21561.jpg'
 };
+/**
+ * Liste des personnages par zone de la map
+ * Structure :
+ *   personnages = { num_map : { num_perso : {"type" : "a", "x" : 0, "y" : 0}, 
+ *                               num_perso : {"type" : "b", "x" : 1, "y" : 1}, ... 
+ *                             } 
+ *                 } 
+ * Exemple :
+ *   personnages = { 0 : { 0 : {"type" : "a", "x" : 0, "y" : 0}, 
+ *                         1 : {"type" : "b", "x" : 1, "y" : 1}, ... 
+ *                       },
+ *                   1 : { 0 : {"type" : "c", "x" : 0, "y" : 0}, 
+ *                         1 : {"type" : "d", "x" : 1, "y" : 1}, ... 
+ *                       }
+ *                 };
+ * @type Array
+ */
+var personnages = {};
 /**
  * Tableau mémorisant les touches actives du clavier
  * @type Array
@@ -439,19 +457,50 @@ function chargerTableau(map) {
     var lignes = map.split("\n"); //split= separateur de chaines de caracteres dans un tableau
     
     var ligne = "";
+    var carac = "";    
     // parcours des lignes
     for (var lig = 0; lig < lignes.length; lig++) { //length=longueur
         ligne = lignes[lig];
         T[lig] = [];
         // ajout des donnees de la ligne dans le tableau
         for(var col = 0; col < ligne.length; col++) {
-            T[lig][col] = ligne.substring(col,col+1);//substring= retourne une sous chaine de la chaine courante entre un indice de debut et un indice de fin
+            carac = ligne.substring(col,col+1);//substring= retourne une sous chaine de la chaine courante entre un indice de debut et un indice de fin            
+            T[lig][col] = recupererPersonnages(lig, col, carac);
         }
     }
     // calcul du nombre de maps contenues dans le tableau
     nb_maps = Math.floor(ligne.length / LONGUEUR_MAP);
     //AfficherTableau(T);
+    console.log(personnages);
     return T;
+}
+
+/**
+ * Initialiser le tableau des personnages
+ * @param {int} lig
+ * @param {int} col
+ * @param {string} carac
+ * @returns {String} Le caractère à insérer dans la map
+ */
+function recupererPersonnages(lig, col, carac) {
+    var carac_map = "";
+    switch (carac) {
+        case "c": // champignon
+            var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
+            var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : personnages[zone_map_perso].length);
+            if (num_perso === 0) {
+                personnages[zone_map_perso] = {};
+            }
+            personnages[zone_map_perso][num_perso] = {"type" : carac, "x" : col, "y" : lig };
+            carac_map = "~"; // perso remplacer par un bloc vide sur la map
+            break;
+
+        default:
+            carac_map = carac;
+            break;
+    }
+    
+    return carac_map;
 }
 
 /**
@@ -530,15 +579,9 @@ function deplacerMario () {
     if (!isMarioSurLeSol || isOneToucheActive()) {
         keyDeplacer();
 
-        if (isMarioTomberDansUnTrou()) {
-            initialiserJeu();
+        setMarioLigneColonne();
 
-            afficherMap(tableau_map, zone_map);
-        } else {
-            setMarioLigneColonne();
-
-            afficherMario();
-        }
+        afficherMario();
     }
 }
 
@@ -626,9 +669,9 @@ function isOneToucheActive() {
  * Détecter si mario est tombé dans un trou
  * @returns {boolean} True s'il est tombé dans un trou, false sinon
  */
-function isMarioTomberDansUnTrou() {
-    return mario_sg_y > (HAUTEUR_MAP - 1) * BLOC_HEIGHT;
-}
+//function isMarioTomberDansUnTrou() {
+//    return mario_sg_y > (HAUTEUR_MAP - 1) * BLOC_HEIGHT;
+//}
 
 /**
  * Déplace mario en fonction de la touche appuyée
@@ -748,16 +791,15 @@ function setMarioLigneColonne() {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Analyse des sorties de map">
-    if (mario_sg_ligne < 0) { // sortie de map en haut
+    if (mario_sg_ligne < 0) { // sortie de map en haut => Mario reste collé au plafond
         mario_sg_ligne = 0;
         mario_id_ligne = mario_sg_ligne;
         mario_sg_y = 0;
         mario_id_y = MARIO_HEIGHT_SMALL;
-    } else if (mario_id_ligne >= HAUTEUR_MAP) { // sortie de map en bas
-        mario_id_ligne = HAUTEUR_MAP - 1;
-        mario_sg_ligne = mario_id_ligne;
-        mario_id_y = HAUTEUR_MAP * MARIO_HEIGHT_SMALL;
-        mario_sg_y = mario_id_y - MARIO_HEIGHT_SMALL;
+    } else if (mario_id_ligne >= HAUTEUR_MAP) { // sortie de map en bas => recommencer le jeu
+        initialiserJeu();
+
+        afficherMap(tableau_map, zone_map);     
     }
 
     if (mario_sg_colonne < 0) { // sortie de map à gauche
@@ -828,15 +870,21 @@ function isObstacleVertical() {
     var response = false;
 
     if (vitesse_mario_y >= 0) { // vers le bas à droite ou à gauche
-       response = (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
-               || (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
-               || (   tableau_map[mario_sg_ligne + 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
-                   || tableau_map[mario_sg_ligne + 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre la base de mario et l'obstacle est nulle
+        // si on est dans la map alors on détermine la réponse sinon on considère qu'il n'y a pas d'obstacle
+        if (typeof tableau_map[mario_id_ligne] !== "undefined" && typeof tableau_map[mario_id_ligne - 1] !== "undefined") {        
+            response = (tableau_map[mario_id_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
+                    || (tableau_map[mario_id_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
+                    || (   tableau_map[mario_sg_ligne + 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
+                        || tableau_map[mario_sg_ligne + 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre la base de mario et l'obstacle est nulle
+        }
     } else if (vitesse_mario_y < 0) { // vers le haut à droite ou à gauche
-        response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
-                || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
-                || (   tableau_map[mario_id_ligne - 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
-                   || tableau_map[mario_id_ligne - 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre le sommet de mario et l'obstacle est nulle
+        // si on est dans la map alors on détermine la réponse sinon on considère qu'il n'y a pas d'obstacle
+        if (typeof tableau_map[mario_sg_ligne] !== "undefined" && typeof tableau_map[mario_sg_ligne - 1] !== "undefined") {
+            response = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] !== cellule_vide) 
+                    || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
+                    || (   tableau_map[mario_id_ligne - 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
+                       || tableau_map[mario_id_ligne - 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre le sommet de mario et l'obstacle est nulle
+        }
     }
 
     return response;
@@ -871,7 +919,6 @@ function showInformation() {
 
 /**
  * Initialisation du jeu
- * @returns {undefined}
  */
 function setup() {
     console.log('----------------- NEW RUN ------------------------');
@@ -882,14 +929,18 @@ function setup() {
 
     tableau_map = chargerTableau(map);
     
+    // todo : extraction des personnages de la map dans un tableau
+    
     afficherMap(tableau_map, zone_map);
 }
 
 /**
  * Gestion du jeu
- * @returns {undefined}
  */
 function draw() {
+    // todo : gestion des personnages de la zone de map affichée
+
+    // gestion de mario
     if (isMarioSurLeSol) {
         deplacerMario();
     } else {
