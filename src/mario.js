@@ -109,14 +109,14 @@ var cellule_vide = "~";
  * @type Array
  */
 var bloc = {
-    '~' : 'http://www.annliz-bonin.com/wp-content/uploads/2017/05/carre%CC%81-blanc-300x300.png', // bloc vide
-    '?' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516', // cube surprise
-    'b' : 'https://s3.amazonaws.com/spoonflower/public/design_thumbnails/0396/3573/rbricks_large_shop_preview.png', // brique
-    '0' : 'https://t6.rbxcdn.com/5da98730977895279f05af2eb7bd7516', // ?
-    'B' : 'http://oi48.tinypic.com/30my7tx.jpg', // Bloc de roche
-    't' : 'http://www.clker.com/cliparts/T/R/h/S/4/i/a-green-cartoon-pipe-hi.png', // tube
-    'c' : 'https://t7.rbxcdn.com/b885beb8ed89feb035643aff4785115f', // champignon
-    '_' : 'https://t3.rbxcdn.com/1977bb7bbfc6b959cf6556daf6381793' // sol
+    '~' : 'http://olivier.leliboux.free.fr/mario/img/carre-blanc-300x300.png', // bloc vide
+    '?' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // cube surprise
+    'b' : 'http://olivier.leliboux.free.fr/mario/img/rbricks_large_shop_preview.png', // brique
+    '0' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // ?
+    'B' : 'http://olivier.leliboux.free.fr/mario/img/roche.jpg', // Bloc de roche
+    't' : 'http://olivier.leliboux.free.fr/mario/img/green-pipe.png', // tube
+    'c' : 'http://olivier.leliboux.free.fr/mario/img/champignon.png', // champignon
+    '_' : 'http://olivier.leliboux.free.fr/mario/img/sol.png' // sol
 };
 /**
  * Les differentes representations de mario
