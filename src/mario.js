@@ -104,7 +104,7 @@ turtleEnabled = false;
  * Indicateur de présence du son
  * @type Boolean
  */
-var play_sound = false;
+var play_sound = true;
 
 // si le son est actif
 if (play_sound) {
@@ -130,7 +130,8 @@ if (play_sound) {
  * @type Array
  */
 var maps = ['map1.txt', 
-            'map1_test.txt'];
+            'map2.txt',
+            'map3.txt'];
 /**
  * Numéro de la map
  * @type Number
@@ -896,6 +897,15 @@ function setMarioLigneColonne() {
         initialiserJeu();
         zone_map = 0;
         changeMap = true;
+        
+        musique_fond.pause();
+        musique_vie_perdue.play();
+        
+        var duree = (musique_vie_perdue.duration - musique_vie_perdue.currentTime) * 1000 ;
+        
+        setTimeout(function() { 
+            musique_fond.play();
+        }, duree);        
     }
 
     if (mario_sg_colonne < 0) { // sortie de map à gauche
