@@ -176,7 +176,9 @@
 </node>
 <node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">
 <edge COLOR="#7c7c00"/>
-<node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1512207606005"/>
+<node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1512310040476">
+<icon BUILTIN="forward"/>
+</node>
 <node TEXT="Reprendre la pr&#xe9;sentation des tubes" ID="ID_1365780720" CREATED="1512222411962" MODIFIED="1512222485294">
 <icon BUILTIN="full-1"/>
 </node>
