@@ -98,7 +98,7 @@ turtleEnabled = false;
  * Indicateur de présence du son
  * @type Boolean
  */
-var play_sound = true;
+var play_sound = false;
 
 // si le son est actif
 if (play_sound) {
@@ -108,13 +108,15 @@ if (play_sound) {
      */
     var son = {
         'fond' : 'http://olivier.leliboux.free.fr/mario/son/musique_mario_fond.wav',
-        'piece' : '',
-        'level_clear' : '',
-        'vie_perdu' : '',
-        'game_over' : ''
+        'fin_niveau' : 'http://olivier.leliboux.free.fr/mario/son/fin_de_niveau.wav',
+        'vie_perdue' : 'http://olivier.leliboux.free.fr/mario/son/vie_perdue.wav',
+        'game_over' : 'http://olivier.leliboux.free.fr/mario/son/game_over.wav'
     };
     
     var musique_fond = ChargerSon(son['fond']);
+    var musique_fin_niveau = ChargerSon(son['fin_niveau']);
+    var musique_game_over = ChargerSon(son['game_over']);
+    var musique_vie_perdue = ChargerSon(son['vie_perdue']);
 }
 /**
  * Tableau contenant les maps
@@ -122,6 +124,11 @@ if (play_sound) {
  */
 var maps = ['map1.txt', 
             'map1_test.txt'];
+/**
+ * Numéro de la map
+ * @type Number
+ */
+var num_map = 0;
 /**
  * Caractere representant une cellule vide
  * @type String
@@ -133,6 +140,7 @@ var cellule_vide = "~";
  */
 var bloc = {
     '~' : 'http://olivier.leliboux.free.fr/mario/img/carre-blanc-300x300.png', // bloc vide
+    '~~' : 'http://olivier.leliboux.free.fr/mario/img/carre-gris.png', // bloc vide
     '?' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // cube surprise
     'b' : 'http://olivier.leliboux.free.fr/mario/img/rbricks_large_shop_preview.png', // brique
     '0' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // ?
@@ -143,7 +151,8 @@ var bloc = {
     '3' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_bas_gauche.png', 
     '4' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_bas_droit.png', 
     'c' : 'http://olivier.leliboux.free.fr/mario/img/champignon.png', // champignon
-    '_' : 'http://olivier.leliboux.free.fr/mario/img/sol.png' // sol
+    '_' : 'http://olivier.leliboux.free.fr/mario/img/sol.png', // sol
+    'p' : 'http://olivier.leliboux.free.fr/mario/img/piece_or.png' // piece d'or
 };
 /**
  * Les differentes representations de mario
@@ -503,7 +512,7 @@ function chargerTableau(map) {
     // calcul du nombre de maps contenues dans le tableau
     nb_maps = Math.floor(ligne.length / LONGUEUR_MAP);
     //AfficherTableau(T);
-    console.log(personnages);
+    //console.log(personnages);
     return T;
 }
 
@@ -541,6 +550,36 @@ function recupererPersonnages(lig, col, carac) {
                 "id_ligne" : lig + 1,
                 "id_colonne" : col + 1,
                 "sens" : (Math.random() > 0.5 ? DROITE : GAUCHE),
+                "is_alive" : true
+            };
+            
+            carac_map = "~"; // perso remplacer par un bloc vide sur la map
+            break;
+
+        case "p": // piece d'or
+            var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
+            var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
+            //console.log('zone_map_perso = ' + zone_map_perso + ' - num_perso = ' + num_perso);
+            if (num_perso === 0) {
+                personnages[zone_map_perso] = {};
+            }
+            var x = (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH;
+            var y = lig * BLOC_HEIGHT;
+            personnages[zone_map_perso][num_perso] = {
+                "type" : carac,
+                "sg_x_prec" : x,
+                "sg_x" : x,
+                "sg_y_prec" : y,
+                "sg_y" : y,
+                "id_x" : x + BLOC_WIDTH,
+                "id_y" : y + BLOC_HEIGHT,
+                "id_x_prec" : x + BLOC_WIDTH,
+                "id_y_prec" : y + BLOC_HEIGHT,
+                "sg_ligne" : lig,
+                "sg_colonne" : col,
+                "id_ligne" : lig + 1,
+                "id_colonne" : col + 1,
+                "sens" : 0,
                 "is_alive" : true
             };
             
@@ -682,10 +721,37 @@ function interactionMarioPersonnages() {
             // vérifier intéraction personnage - mario
             if (Math.abs(mario_sg_x - leperso["sg_x"]) < BLOC_WIDTH && Math.abs(mario_sg_y - leperso["sg_y"]) < BLOC_WIDTH ) {
                 leperso["is_alive"] = false; // mort du personnage
-                // Retour au début du jeu
-                initialiserJeu();
-                zone_map = 0;
-                changeMap = true;
+                
+                // gestion du game play en fonction du perso
+                switch (leperso["type"]) {
+                    case "c":
+                        // Retour au début du jeu
+                        initialiserJeu();
+                        zone_map = 0;
+                        changeMap = true;
+                        if (play_sound) {
+                            musique_vie_perdue.play();
+                        }
+                        break;
+                        
+                    case "p":
+                        // Effacer la pièce : dessiner le bloc de fond ne marche pas ! 
+                        // Il faut obligatoirement une autre image. On a créé une image très
+                        // lègèrement grisée. On ne voit aucune différence à l'oeil nu.
+                        DrawImage(bloc['~~'], leperso["sg_x"], leperso["sg_y"], BLOC_WIDTH, BLOC_HEIGHT);
+                        // todo : compter points
+                        if (play_sound) {
+                            //musique_piece_or.play();
+                        }
+                        // bidouille : sans le timeout, mario ne s'affiche pas !
+                        setTimeout(function(){ afficherMario(); }, 50);
+                        break;
+                        
+                    default:
+                        
+                        break;
+                }
+
                 break;
             }
         }
@@ -949,7 +1015,7 @@ function setMarioLigneColonne() {
             mario_id_x = (mario_id_colonne + 1) * MARIO_WIDTH_SMALL;
             mario_sg_colonne = mario_id_colonne;
             mario_sg_x = mario_id_x - MARIO_WIDTH_SMALL;
-        } else {
+        } else { // début de map
             mario_sg_colonne = 0;
             mario_id_colonne = 0;
             mario_sg_x = 0;
@@ -965,11 +1031,21 @@ function setMarioLigneColonne() {
             mario_id_colonne = 0;
             mario_sg_x = 0;
             mario_id_x = MARIO_WIDTH_SMALL;
-        } else {
+        } else { // fin de map
             mario_id_colonne = LONGUEUR_MAP - 1;
             mario_id_x = (mario_id_colonne + 1) * MARIO_WIDTH_SMALL;
             mario_sg_colonne = mario_id_colonne;
             mario_sg_x = mario_id_x - MARIO_WIDTH_SMALL;
+            if (play_sound) {
+                musique_fin_niveau.play();
+            }
+            // changement de map
+            num_map++;
+            // on recommence au départ
+            if (num_map >= maps.length) {
+                num_map = 0;
+            }
+            setup();
         }
     }
     //</editor-fold>
@@ -1109,6 +1185,10 @@ function showInformation() {
 }
 //</editor-fold>
 
+if (play_sound) {
+    musique_fond.play();
+}
+    
 /**
  * Initialisation du jeu
  */
@@ -1116,12 +1196,8 @@ function setup() {
     console.log('----------------- NEW RUN ------------------------');
 
     initialiserJeu();
-    
-    if (play_sound) {
-        musique_fond.play();
-    }
 
-    var map = readFile(maps[0]);
+    var map = readFile(maps[num_map]);
 
     tableau_map = chargerTableau(map);
     

@@ -158,11 +158,17 @@
 <node TEXT="Afficher les personnages" ID="ID_1070322046" CREATED="1512224697241" MODIFIED="1512227335816">
 <icon BUILTIN="button_ok"/>
 </node>
+<node TEXT="Champignon" ID="ID_1085165178" CREATED="1512301663251" MODIFIED="1512301707402">
+<icon BUILTIN="button_ok"/>
 <node TEXT="Animer le d&#xe9;placement" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1512228490148">
 <icon BUILTIN="button_ok"/>
 </node>
 <node TEXT="D&#xe9;tecter les obstacles" ID="ID_1401075430" CREATED="1512227250940" MODIFIED="1512269256287">
 <icon BUILTIN="button_ok"/>
+</node>
+</node>
+<node TEXT="Pi&#xe8;ce d&apos;or" ID="ID_1762111235" CREATED="1512301645252" MODIFIED="1512301662734">
+<node TEXT="D&#xe9;tecter les obstacles" ID="ID_678120389" CREATED="1512227250940" MODIFIED="1512301698105"/>
 </node>
 </node>
 <node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">
