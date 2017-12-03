@@ -5,7 +5,7 @@
  * Afficher les coordonnées du tableau
  * @type Boolean
  */
-const SHOW_COORDINATE = true;
+const SHOW_COORDINATE = false;
 /**
  * Longueur de la map affichee a l'ecran
  * @type Number
@@ -16,11 +16,6 @@ const LONGUEUR_MAP = 50;
  * @type Number
  */
 const HAUTEUR_MAP = 14;
-/**
- * Fichier contenant la map
- * @type String
- */
-const MAP = 'map1.txt';
 /**
  * Largeur d'un bloc a l'ecran
  * @type Number
@@ -100,6 +95,34 @@ const V0 = 400;
  */
 turtleEnabled = false;
 /**
+ * Indicateur de présence du son
+ * @type Boolean
+ */
+var play_sound = true;
+
+// si le son est actif
+if (play_sound) {
+    /**
+     * Les différentes musiques de mario
+     * @type Array
+     */
+    var son = {
+        'fond' : 'http://olivier.leliboux.free.fr/mario/son/musique_mario_fond.wav',
+        'piece' : '',
+        'level_clear' : '',
+        'vie_perdu' : '',
+        'game_over' : ''
+    };
+    
+    var musique_fond = ChargerSon(son['fond']);
+}
+/**
+ * Tableau contenant les maps
+ * @type Array
+ */
+var maps = ['map1.txt', 
+            'map1_test.txt'];
+/**
  * Caractere representant une cellule vide
  * @type String
  */
@@ -133,13 +156,6 @@ var mario = {
     'petit_saute_gauche' : 'http://olivier.leliboux.free.fr/mario/img/mario_petit_saute-gauche.png',
     'grand' : 'http://olivier.leliboux.free.fr/mario/img/mario_grand.png',
     'grand_gauche' : 'http://olivier.leliboux.free.fr/mario/img/mario_grand_gauche.png'
-};
-/**
- * Les différentes musiques de mario
- * @type Array
- */
-var son = {
-    'fond' : 'http://olivier.leliboux.free.fr/mario/son/musique_mario_fond.wav'
 };
 /**
  * Liste des personnages par zone de la map
@@ -670,6 +686,7 @@ function interactionMarioPersonnages() {
                 initialiserJeu();
                 zone_map = 0;
                 changeMap = true;
+                break;
             }
         }
     }
@@ -1099,8 +1116,12 @@ function setup() {
     console.log('----------------- NEW RUN ------------------------');
 
     initialiserJeu();
+    
+    if (play_sound) {
+        musique_fond.play();
+    }
 
-    var map = readFile(MAP);
+    var map = readFile(maps[0]);
 
     tableau_map = chargerTableau(map);
     
@@ -1111,11 +1132,16 @@ function setup() {
  * Gestion du jeu
  */
 function draw() {
-    // Gestion des personnages de la zone de map affichée
+    
     if (changeMap) {
+        // Changement de zone de map
         afficherMap(tableau_map, zone_map);
+        if (isMarioSurLeSol) { // affiche mario quand il change de map au sol
+            afficherMario();
+        }
         changeMap = false;
     } else {
+        // Gestion des personnages de la zone de map affichée
         deplacerPersonnages();
         effacerPersonnages(zone_map);
     }

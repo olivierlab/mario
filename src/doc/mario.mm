@@ -93,7 +93,9 @@
 <node TEXT="Afficher la map zone par zone" ID="ID_474413802" CREATED="1508796316896" MODIFIED="1512207544389">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Changer de map" ID="ID_1769249163" CREATED="1512207512441" MODIFIED="1512207542056"/>
+<node TEXT="Changer de map" ID="ID_1769249163" CREATED="1512207512441" MODIFIED="1512295862787">
+<icon BUILTIN="forward"/>
+</node>
 </node>
 <node TEXT="Hero" POSITION="right" ID="ID_428931536" CREATED="1512207581016" MODIFIED="1512207588754">
 <edge COLOR="#7c007c"/>
@@ -142,6 +144,9 @@
 </node>
 <node TEXT="si personnage touch&#xe9; par le haut alors perso disparait et mario gagne des points" ID="ID_1163359351" CREATED="1512228612541" MODIFIED="1512270969073">
 <icon BUILTIN="button_cancel"/>
+</node>
+<node TEXT="D&#xe8;s que mario touche un personnage, il retourne au d&#xe9;but du jeu" ID="ID_1400286456" CREATED="1512295878397" MODIFIED="1512295908930">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 </node>
