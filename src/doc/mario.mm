@@ -151,7 +151,9 @@
 <node TEXT="Animer le d&#xe9;placement" ID="ID_1452434819" CREATED="1508797134287" MODIFIED="1512228490148">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="D&#xe9;tecter les obstacles" ID="ID_1401075430" CREATED="1512227250940" MODIFIED="1512227258678"/>
+<node TEXT="D&#xe9;tecter les obstacles" ID="ID_1401075430" CREATED="1512227250940" MODIFIED="1512269256287">
+<icon BUILTIN="button_ok"/>
+</node>
 </node>
 <node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">
 <edge COLOR="#7c7c00"/>
