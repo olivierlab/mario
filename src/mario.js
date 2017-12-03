@@ -547,8 +547,10 @@ function effacerPersonnages(zone) {
     // Boucle d'effaçage
     for (var personnage in personnages[zone]) {
         leperso = personnages[zone][personnage];
-        // effacer position prec du personnage
-        DrawImage(bloc[cellule_vide], leperso["sg_x_prec"], leperso["sg_y_prec"], BLOC_WIDTH, BLOC_HEIGHT);
+        if (leperso["is_alive"]) {
+            // effacer position prec du personnage
+            DrawImage(bloc[cellule_vide], leperso["sg_x_prec"], leperso["sg_y_prec"], BLOC_WIDTH, BLOC_HEIGHT);
+        }
     }
 }
 
@@ -647,6 +649,29 @@ function deplacerMario () {
         setMarioLigneColonne();
 
         afficherMario();
+    }
+    
+    interactionMarioPersonnages();
+}
+
+/**
+ * Vérification de l'intéraction entre mario et les personnages
+ */
+function interactionMarioPersonnages() {
+    var leperso;
+    // Boucle d'affichage : séparation pour éviter qu'un personnage en efface un autre quand ils se croisent
+    for (var personnage in personnages[zone_map]) {
+        leperso = personnages[zone_map][personnage];
+        if (typeof leperso !== "undefined" && leperso["is_alive"]) {
+            // vérifier intéraction personnage - mario
+            if (Math.abs(mario_sg_x - leperso["sg_x"]) < BLOC_WIDTH && Math.abs(mario_sg_y - leperso["sg_y"]) < BLOC_WIDTH ) {
+                leperso["is_alive"] = false; // mort du personnage
+                // Retour au début du jeu
+                initialiserJeu();
+                zone_map = 0;
+                changeMap = true;
+            }
+        }
     }
 }
 

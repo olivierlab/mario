@@ -135,9 +135,14 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
-<node TEXT="Int&#xe9;raction avec personnages" ID="ID_1003547860" CREATED="1512227245412" MODIFIED="1512227275293">
-<node TEXT="si personnage touch&#xe9; de c&#xf4;t&#xe9; alors perso disparait et mario perd un point de vie" ID="ID_1971019911" CREATED="1512228547861" MODIFIED="1512228609774"/>
-<node TEXT="si personnage touch&#xe9; par le haut alors perso disparait et mario gagne des points" ID="ID_1163359351" CREATED="1512228612541" MODIFIED="1512228639814"/>
+<node TEXT="Int&#xe9;raction avec personnages" ID="ID_1003547860" CREATED="1512227245412" MODIFIED="1512270971513">
+<icon BUILTIN="button_ok"/>
+<node TEXT="si personnage touch&#xe9; de c&#xf4;t&#xe9; alors perso disparait et mario perd un point de vie" ID="ID_1971019911" CREATED="1512228547861" MODIFIED="1512270965676">
+<icon BUILTIN="button_cancel"/>
+</node>
+<node TEXT="si personnage touch&#xe9; par le haut alors perso disparait et mario gagne des points" ID="ID_1163359351" CREATED="1512228612541" MODIFIED="1512270969073">
+<icon BUILTIN="button_cancel"/>
+</node>
 </node>
 </node>
 <node TEXT="Personnage" POSITION="right" ID="ID_1771610630" CREATED="1512207610784" MODIFIED="1512207615018">
