@@ -1,5 +1,11 @@
 //"use strict";
 
+/*************************************************************
+ *        Jeu de mario réalisé en algoscript                 *
+ *     par Corention LE LIBOUX et Timothé DEVIN              *
+ * Université de Nantes - L1 - Section MIP - Année 2017-2018 *
+ *************************************************************/
+
 //<editor-fold defaultstate="collapsed" desc="Constantes">
 /**
  * Afficher les coordonnées du tableau
@@ -143,6 +149,7 @@ var bloc = {
     '~' : 'http://olivier.leliboux.free.fr/mario/img/carre-blanc-300x300.png', // bloc vide
     '~~' : 'http://olivier.leliboux.free.fr/mario/img/carre-gris.png', // bloc vide
     '?' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // cube surprise
+    '!' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // cube surprise après ramassage de la pièce
     'b' : 'http://olivier.leliboux.free.fr/mario/img/rbricks_large_shop_preview.png', // brique
     '0' : 'http://olivier.leliboux.free.fr/mario/img/cube_interrogation.png', // ?
     'B' : 'http://olivier.leliboux.free.fr/mario/img/roche.jpg', // Bloc de roche
@@ -409,33 +416,19 @@ function chargerTableau(map) {
  */
 function recupererPersonnages(lig, col, carac) {
     var carac_map = carac;
+
     switch (carac) {
         case "c": // champignon
             var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
             var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
-            //console.log('zone_map_perso = ' + zone_map_perso + ' - num_perso = ' + num_perso);
+
             if (num_perso === 0) {
                 personnages[zone_map_perso] = {};
             }
             var x = (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH;
             var y = lig * BLOC_HEIGHT;
-            personnages[zone_map_perso][num_perso] = {
-                "type" : carac,
-                "sg_x_prec" : x,
-                "sg_x" : x,
-                "sg_y_prec" : y,
-                "sg_y" : y,
-                "id_x" : x + BLOC_WIDTH,
-                "id_y" : y + BLOC_HEIGHT,
-                "id_x_prec" : x + BLOC_WIDTH,
-                "id_y_prec" : y + BLOC_HEIGHT,
-                "sg_ligne" : lig,
-                "sg_colonne" : col,
-                "id_ligne" : lig + 1,
-                "id_colonne" : col + 1,
-                "sens" : (Math.random() > 0.5 ? DROITE : GAUCHE),
-                "is_alive" : true
-            };
+            
+            ajouterPersonnage(zone_map_perso, num_perso, carac, x, y, lig, col, (Math.random() > 0.5 ? DROITE : GAUCHE));
             
             carac_map = "~"; // perso remplacer par un bloc vide sur la map
             break;
@@ -443,29 +436,14 @@ function recupererPersonnages(lig, col, carac) {
         case "p": // piece d'or
             var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
             var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
-            //console.log('zone_map_perso = ' + zone_map_perso + ' - num_perso = ' + num_perso);
+
             if (num_perso === 0) {
                 personnages[zone_map_perso] = {};
             }
             var x = (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH;
             var y = lig * BLOC_HEIGHT;
-            personnages[zone_map_perso][num_perso] = {
-                "type" : carac,
-                "sg_x_prec" : x,
-                "sg_x" : x,
-                "sg_y_prec" : y,
-                "sg_y" : y,
-                "id_x" : x + BLOC_WIDTH,
-                "id_y" : y + BLOC_HEIGHT,
-                "id_x_prec" : x + BLOC_WIDTH,
-                "id_y_prec" : y + BLOC_HEIGHT,
-                "sg_ligne" : lig,
-                "sg_colonne" : col,
-                "id_ligne" : lig + 1,
-                "id_colonne" : col + 1,
-                "sens" : 0,
-                "is_alive" : true
-            };
+            
+            ajouterPersonnage(zone_map_perso, num_perso, carac, x, y, lig, col, 0);
             
             carac_map = "~"; // perso remplacer par un bloc vide sur la map
             break;
@@ -475,6 +453,37 @@ function recupererPersonnages(lig, col, carac) {
     }
     
     return carac_map;
+}
+
+/**
+ * Ajouter un personnage dans le tableau des personnages
+ * @param {int} zone_map_perso Zone de la map
+ * @param {int} num_perso Numéro du personnage
+ * @param {string} carac Caractère représentant le personnage
+ * @param {int} x Abscisse
+ * @param {int} y Ordonnée
+ * @param {int} lig Ligne
+ * @param {int} col Colonne
+ * @param {int} sens Sens de déplacement : -1 = GAUCHE, 0 = AUCUN, 1 = DROITE
+ */
+function ajouterPersonnage(zone_map_perso, num_perso, carac, x, y, lig, col, sens) {
+    personnages[zone_map_perso][num_perso] = {
+        "type" : carac,
+        "sg_x_prec" : x,
+        "sg_x" : x,
+        "sg_y_prec" : y,
+        "sg_y" : y,
+        "id_x" : x + BLOC_WIDTH,
+        "id_y" : y + BLOC_HEIGHT,
+        "id_x_prec" : x + BLOC_WIDTH,
+        "id_y_prec" : y + BLOC_HEIGHT,
+        "sg_ligne" : lig,
+        "sg_colonne" : col,
+        "id_ligne" : lig + 1,
+        "id_colonne" : col + 1,
+        "sens" : sens,
+        "is_alive" : true
+    };    
 }
 
 /**
@@ -1039,6 +1048,29 @@ function isObstacleVertical() {
                     || (tableau_map[mario_sg_ligne][offset_tableau + mario_id_colonne] !== cellule_vide)
                     || (   tableau_map[mario_id_ligne - 1][offset_tableau + mario_sg_colonne] !== cellule_vide 
                        || tableau_map[mario_id_ligne - 1][offset_tableau + mario_id_colonne] !== cellule_vide); // la distance entre le sommet de mario et l'obstacle est nulle
+
+            // on touché un obstacle, maintenant on teste si on a percuté un cube surprise
+            if (response) {
+                var isCubeSurprise = (tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] === "?");
+                // si on a percuté un cube surprise, on ajoute une pièce d'or dans le tableau des personnages
+                if (isCubeSurprise) {
+                    // on change de caractère pour éviter de ramasser plusieurs fois une pièce
+                    tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] = "!";
+
+                    var col = mario_sg_colonne;
+                    var lig = mario_sg_ligne - 1;
+                    var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
+                    var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
+                    //console.log('zone_map_perso = ' + zone_map_perso + ' - num_perso = ' + num_perso);
+                    if (num_perso === 0) {
+                        personnages[zone_map_perso] = {};
+                    }
+                    var x = (col - zone_map_perso * LONGUEUR_MAP) * BLOC_WIDTH;
+                    var y = lig * BLOC_HEIGHT;
+
+                    ajouterPersonnage(zone_map_perso, num_perso, "p", x, y, lig, col, 0);
+                }
+            }
         }
     }
 
