@@ -623,9 +623,8 @@ function interactionMarioPersonnages() {
                         initialiserJeu();
                         zone_map = 0;
                         changeMap = true;
-                        if (play_sound) {
-                            musique_vie_perdue.play();
-                        }
+                        
+                        playNewSound(musique_vie_perdue);
                         break;
                         
                     case "p":
@@ -634,9 +633,7 @@ function interactionMarioPersonnages() {
                         // lègèrement grisée. On ne voit aucune différence à l'oeil nu.
                         DrawImage(bloc['~~'], leperso["sg_x"], leperso["sg_y"], BLOC_WIDTH, BLOC_HEIGHT);
                         // todo : compter points
-                        if (play_sound) {
-                            //musique_piece_or.play();
-                        }
+                        //playNewSound(musique_piece_or);
                         // bidouille : sans le timeout, mario ne s'affiche pas !
                         setTimeout(function(){ afficherMario(); }, 50);
                         break;
@@ -673,7 +670,6 @@ function deplacerPersonnages () {
             setPersoLigneColonne(leperso);
 
             // détection d'obstacle (mur ou trou) et changement de sens
-
             // repositionner perso horizontalement pour qu'il ne pénètre pas le bloc
             if ( isObstacleHorizontalPerso(leperso) ) {
                 leperso["sg_x"] = (leperso["sens"] > 0 ? leperso["sg_colonne"] : leperso["id_colonne"]) * BLOC_WIDTH;
@@ -898,14 +894,7 @@ function setMarioLigneColonne() {
         zone_map = 0;
         changeMap = true;
         
-        musique_fond.pause();
-        musique_vie_perdue.play();
-        
-        var duree = (musique_vie_perdue.duration - musique_vie_perdue.currentTime) * 1000 ;
-        
-        setTimeout(function() { 
-            musique_fond.play();
-        }, duree);        
+        playNewSound(musique_vie_perdue);
     }
 
     if (mario_sg_colonne < 0) { // sortie de map à gauche
@@ -939,10 +928,9 @@ function setMarioLigneColonne() {
             mario_id_x = (mario_id_colonne + 1) * MARIO_WIDTH_SMALL;
             mario_sg_colonne = mario_id_colonne;
             mario_sg_x = mario_id_x - MARIO_WIDTH_SMALL;
-            if (play_sound) {
-                musique_fond.pause();
-                musique_fin_niveau.play();
-            }
+            
+            playNewSound(musique_fin_niveau);
+
             // changement de map
             num_map++;
             // on recommence au départ si on atteint la dernière map
@@ -954,6 +942,23 @@ function setMarioLigneColonne() {
         }
     }
     //</editor-fold>
+}
+
+/**
+ * Jouer une musique et mettre la musique de fond en pause
+ * @param {object} musique_to_play Musique à jouer
+ */
+function playNewSound(musique_to_play) {
+    if (play_sound) {
+        musique_fond.pause();
+        musique_to_play.play();
+
+        var duree = (musique_to_play.duration - musique_to_play.currentTime) * 1000 ;
+
+        setTimeout(function() { 
+            musique_fond.play();
+        }, duree);
+    }
 }
 
 /**
@@ -1126,17 +1131,6 @@ function setup() {
     tableau_map = chargerTableau(map);
     
     afficherMap(tableau_map, zone_map);
-    
-    if (play_sound) {
-        if (musique_fin_niveau.ended) {
-            musique_fond.play();
-        } else {
-            var duree = (musique_fin_niveau.duration - musique_fin_niveau.currentTime) * 1000 ;
-            setTimeout(function() { 
-                musique_fond.play();
-            }, duree);
-        }
-    }
 }
 
 /**
