@@ -102,7 +102,8 @@
 <node TEXT="Faire tomber mario dans la map" ID="ID_1776137652" CREATED="1508796333824" MODIFIED="1512207593273">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="faire bouger mario" ID="ID_1328643436" CREATED="1508796357136" MODIFIED="1512207595526">
+<node TEXT="faire bouger mario" ID="ID_1328643436" CREATED="1508796357136" MODIFIED="1512337564384">
+<icon BUILTIN="button_ok"/>
 <node TEXT="Int&#xe9;ragir avec les obstacles" ID="ID_769524741" CREATED="1508797187430" MODIFIED="1509374418956">
 <icon BUILTIN="button_ok"/>
 <node TEXT="G&#xe9;rer mario dans un objet" ID="ID_133115033" CREATED="1509749540070" MODIFIED="1512220649077">
@@ -179,8 +180,8 @@
 <node TEXT="Int&#xe9;raction avec les cubes &#xe0; surprise" ID="ID_709277410" CREATED="1509747187443" MODIFIED="1512313497068">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Reprendre la pr&#xe9;sentation des tubes" ID="ID_1365780720" CREATED="1512222411962" MODIFIED="1512222485294">
-<icon BUILTIN="full-1"/>
+<node TEXT="Reprendre la pr&#xe9;sentation des tubes" ID="ID_1365780720" CREATED="1512222411962" MODIFIED="1512337536385">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="Bonus" POSITION="left" ID="ID_608593155" CREATED="1508797101009" MODIFIED="1508797104009">
@@ -195,8 +196,8 @@
 <node TEXT="mode terre" ID="ID_1193611921" CREATED="1512206785538" MODIFIED="1512206790835"/>
 <node TEXT="mode lune" ID="ID_1083718714" CREATED="1512206791449" MODIFIED="1512206794395"/>
 </node>
-<node TEXT="Ajouter du son" ID="ID_304462250" CREATED="1512206801633" MODIFIED="1512222495518">
-<icon BUILTIN="full-1"/>
+<node TEXT="Ajouter du son" ID="ID_304462250" CREATED="1512206801633" MODIFIED="1512337550184">
+<icon BUILTIN="button_ok"/>
 </node>
 <node TEXT="Ajouter une zone de d&#xe9;bugage" ID="ID_818526110" CREATED="1509374444312" MODIFIED="1509374456540">
 <icon BUILTIN="button_ok"/>
