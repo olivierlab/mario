@@ -93,8 +93,8 @@
 <node TEXT="Afficher la map zone par zone" ID="ID_474413802" CREATED="1508796316896" MODIFIED="1512207544389">
 <icon BUILTIN="button_ok"/>
 </node>
-<node TEXT="Changer de map" ID="ID_1769249163" CREATED="1512207512441" MODIFIED="1512295862787">
-<icon BUILTIN="forward"/>
+<node TEXT="Changer de map" ID="ID_1769249163" CREATED="1512207512441" MODIFIED="1512306340067">
+<icon BUILTIN="button_ok"/>
 </node>
 </node>
 <node TEXT="Hero" POSITION="right" ID="ID_428931536" CREATED="1512207581016" MODIFIED="1512207588754">
@@ -167,8 +167,11 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
-<node TEXT="Pi&#xe8;ce d&apos;or" ID="ID_1762111235" CREATED="1512301645252" MODIFIED="1512301662734">
-<node TEXT="D&#xe9;tecter les obstacles" ID="ID_678120389" CREATED="1512227250940" MODIFIED="1512301698105"/>
+<node TEXT="Pi&#xe8;ce d&apos;or" ID="ID_1762111235" CREATED="1512301645252" MODIFIED="1512306334395">
+<icon BUILTIN="button_ok"/>
+<node TEXT="D&#xe9;tecter les obstacles" ID="ID_678120389" CREATED="1512227250940" MODIFIED="1512306329502">
+<icon BUILTIN="button_ok"/>
+</node>
 </node>
 </node>
 <node TEXT="D&#xe9;cor" POSITION="right" ID="ID_1820855894" CREATED="1512207632544" MODIFIED="1512207635505">

@@ -114,6 +114,7 @@ if (play_sound) {
     };
     
     var musique_fond = ChargerSon(son['fond']);
+    musique_fond.loop = true;
     var musique_fin_niveau = ChargerSon(son['fin_niveau']);
     var musique_game_over = ChargerSon(son['game_over']);
     var musique_vie_perdue = ChargerSon(son['vie_perdue']);
@@ -1037,14 +1038,16 @@ function setMarioLigneColonne() {
             mario_sg_colonne = mario_id_colonne;
             mario_sg_x = mario_id_x - MARIO_WIDTH_SMALL;
             if (play_sound) {
+                musique_fond.pause();
                 musique_fin_niveau.play();
             }
             // changement de map
             num_map++;
-            // on recommence au départ
+            // on recommence au départ si on atteint la dernière map
             if (num_map >= maps.length) {
                 num_map = 0;
             }
+            // initialisation du jeu
             setup();
         }
     }
@@ -1185,10 +1188,6 @@ function showInformation() {
 }
 //</editor-fold>
 
-if (play_sound) {
-    musique_fond.play();
-}
-    
 /**
  * Initialisation du jeu
  */
@@ -1202,6 +1201,17 @@ function setup() {
     tableau_map = chargerTableau(map);
     
     afficherMap(tableau_map, zone_map);
+    
+    if (play_sound) {
+        if (musique_fin_niveau.ended) {
+            musique_fond.play();
+        } else {
+            var duree = (musique_fin_niveau.duration - musique_fin_niveau.currentTime) * 1000 ;
+            setTimeout(function() { 
+                musique_fond.play();
+            }, duree);
+        }
+    }
 }
 
 /**
