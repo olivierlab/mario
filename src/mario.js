@@ -104,7 +104,7 @@ turtleEnabled = false;
  * Indicateur de présence du son
  * @type Boolean
  */
-var play_sound = true;
+var play_sound = false;
 
 // si le son est actif
 if (play_sound) {
@@ -121,6 +121,7 @@ if (play_sound) {
     
     var musique_fond = ChargerSon(son['fond']);
     musique_fond.loop = true;
+    musique_fond.play();
     var musique_fin_niveau = ChargerSon(son['fin_niveau']);
     var musique_game_over = ChargerSon(son['game_over']);
     var musique_vie_perdue = ChargerSon(son['vie_perdue']);
@@ -348,6 +349,11 @@ var mario_is_obstacle_H = false;
  * @type Boolean
  */
 var changeMap = false;
+/**
+ * Indicateur de passage au niveau suivant
+ * @type Boolean
+ */
+var change_niveau = false;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -376,7 +382,7 @@ function initialiserJeu() {
     mario_id_colonne = mario_sg_colonne + 1;
     offset_tableau = zone_map * LONGUEUR_MAP;
     sens = DROITE;
-    initialiser_saut_mario = true;    
+    initialiser_saut_mario = true;
 }
 
 /**
@@ -496,7 +502,7 @@ function effacerPersonnages(zone) {
     // Boucle d'effaçage
     for (var personnage in personnages[zone]) {
         leperso = personnages[zone][personnage];
-        if (leperso["is_alive"]) {
+        if (leperso["is_alive"] && leperso["sens"] !== 0) {
             // effacer position prec du personnage
             DrawImage(bloc[cellule_vide], leperso["sg_x_prec"], leperso["sg_y_prec"], BLOC_WIDTH, BLOC_HEIGHT);
         }
@@ -658,7 +664,8 @@ function deplacerPersonnages () {
     for (var personnage in personnages[zone_map]) {
         leperso = personnages[zone_map][personnage];
 
-        if (leperso["is_alive"]) {
+        // on ne déplace que ce qui est vivant et que ce qui bouge
+        if (leperso["is_alive"] && leperso["sens"] !== 0) {
             // Mémorisation de la position précédente
             leperso["sg_x_prec"] = leperso["sg_x"];
             leperso["sg_y_prec"] = leperso["sg_y"];
@@ -937,8 +944,7 @@ function setMarioLigneColonne() {
             if (num_map >= maps.length) {
                 num_map = 0;
             }
-            // initialisation du jeu
-            setup();
+            change_niveau = true;
         }
     }
     //</editor-fold>
@@ -1070,9 +1076,10 @@ function isObstacleVertical() {
                 // si on a percuté un cube surprise, on ajoute une pièce d'or dans le tableau des personnages
                 if (isCubeSurprise) {
                     // on change de caractère pour éviter de ramasser plusieurs fois une pièce
+                    // Le "?" est remplacé par un "!"
                     tableau_map[mario_sg_ligne][offset_tableau + mario_sg_colonne] = "!";
 
-                    var col = mario_sg_colonne;
+                    var col = offset_tableau + mario_sg_colonne;
                     var lig = mario_sg_ligne - 1;
                     var zone_map_perso = Math.floor(col / LONGUEUR_MAP);
                     var num_perso = (typeof personnages[zone_map_perso] === "undefined" ? 0 : Object.keys(personnages[zone_map_perso]).length);
@@ -1123,6 +1130,10 @@ function showInformation() {
  */
 function setup() {
     console.log('----------------- NEW RUN ------------------------');
+    
+    // remise à zéro du tableau des personnages au changement de niveau
+    // sinon les personnages du niveau précédent apparaissent au niveau suivant
+    personnages = {};
 
     initialiserJeu();
 
@@ -1135,29 +1146,36 @@ function setup() {
 
 /**
  * Gestion du jeu
+ * Il faut tout afficher ici sinon ça fonctionne mal
  */
 function draw() {
     
-    if (changeMap) {
-        // Changement de zone de map
-        afficherMap(tableau_map, zone_map);
-        if (isMarioSurLeSol) { // affiche mario quand il change de map au sol
-            afficherMario();
+    if (change_niveau) {
+        // initialisation du jeu
+        setup();
+        change_niveau = false;
+    } else {
+        if (changeMap) {
+            // Changement de zone de map
+            afficherMap(tableau_map, zone_map);
+            if (isMarioSurLeSol) { // affiche mario quand il change de map au sol
+                afficherMario();
+            }
+            changeMap = false;
+        } else {
+            // Gestion des personnages de la zone de map affichée
+            deplacerPersonnages();
+            effacerPersonnages(zone_map);
         }
-        changeMap = false;
-    } else {
-        // Gestion des personnages de la zone de map affichée
-        deplacerPersonnages();
-        effacerPersonnages(zone_map);
-    }
 
-    afficherPersonnages();
+        afficherPersonnages();
 
-    // gestion de mario
-    if (isMarioSurLeSol) {
-        deplacerMario();
-    } else {
-        faireSauterMario();
+        // gestion de mario
+        if (isMarioSurLeSol) {
+            deplacerMario();
+        } else {
+            faireSauterMario();
+        }
     }
 }
 
