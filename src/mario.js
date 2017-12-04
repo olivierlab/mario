@@ -105,26 +105,40 @@ turtleEnabled = false;
  * @type Boolean
  */
 var play_sound = false;
-
+/**
+ * Les différentes musiques de mario
+ * @type Array
+ */
+var son = {
+    'fond' : 'http://olivier.leliboux.free.fr/mario/son/musique_mario_fond.wav',
+    'fin_niveau' : 'http://olivier.leliboux.free.fr/mario/son/fin_de_niveau.wav',
+    'vie_perdue' : 'http://olivier.leliboux.free.fr/mario/son/vie_perdue.wav',
+    'game_over' : 'http://olivier.leliboux.free.fr/mario/son/game_over.wav'
+};
+/**
+ * Musique de fond
+ * @type audio
+ */
+var musique_fond = ChargerSon(son['fond']);
+musique_fond.loop = true;
+/**
+ * Musique de fin de niveau
+ * @type audio
+ */
+var musique_fin_niveau = ChargerSon(son['fin_niveau']);
+/**
+ * Musique de jeu perdu
+ * @type audio
+ */
+var musique_game_over = ChargerSon(son['game_over']);
+/**
+ * Musique de perte de vie
+ * @type audio
+ */
+var musique_vie_perdue = ChargerSon(son['vie_perdue']);
 // si le son est actif
 if (play_sound) {
-    /**
-     * Les différentes musiques de mario
-     * @type Array
-     */
-    var son = {
-        'fond' : 'http://olivier.leliboux.free.fr/mario/son/musique_mario_fond.wav',
-        'fin_niveau' : 'http://olivier.leliboux.free.fr/mario/son/fin_de_niveau.wav',
-        'vie_perdue' : 'http://olivier.leliboux.free.fr/mario/son/vie_perdue.wav',
-        'game_over' : 'http://olivier.leliboux.free.fr/mario/son/game_over.wav'
-    };
-    
-    var musique_fond = ChargerSon(son['fond']);
-    musique_fond.loop = true;
     musique_fond.play();
-    var musique_fin_niveau = ChargerSon(son['fin_niveau']);
-    var musique_game_over = ChargerSon(son['game_over']);
-    var musique_vie_perdue = ChargerSon(son['vie_perdue']);
 }
 /**
  * Tableau contenant les maps
@@ -163,6 +177,14 @@ var bloc = {
     'c' : 'http://olivier.leliboux.free.fr/mario/img/champignon.png', // champignon
     '_' : 'http://olivier.leliboux.free.fr/mario/img/sol.png', // sol
     'p' : 'http://olivier.leliboux.free.fr/mario/img/piece_or.png' // piece d'or
+};
+/**
+ * Images du jeu
+ * @type Array
+ */
+var images = {
+    'winner' : 'http://olivier.leliboux.free.fr/mario/img/winner.png', // fin de niveau
+    'level' : 'http://olivier.leliboux.free.fr/mario/img/level.jpg' // nouveau niveau
 };
 /**
  * Les differentes representations de mario
@@ -354,6 +376,16 @@ var changeMap = false;
  * @type Boolean
  */
 var change_niveau = false;
+/**
+ * Indicateur de changement d'étape à la fin d'un niveau
+ * @type String
+ */
+var etape_chgt_niveau = "initiale";
+/**
+ * Durée d'attente entre chaque étape
+ * @type int
+ */
+var dureeAttente;
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -1151,9 +1183,33 @@ function setup() {
 function draw() {
     
     if (change_niveau) {
-        // initialisation du jeu
-        setup();
-        change_niveau = false;
+        switch (etape_chgt_niveau) {
+            case "initiale":
+                Effacer();
+                DrawImage(images["winner"], 17 * BLOC_WIDTH, 0, 14 * BLOC_WIDTH, 14 * BLOC_HEIGHT);
+                etape_chgt_niveau = "suivante";
+                dureeAttente = Date.now();
+                break;
+            case "suivante":
+                if (Date.now() - dureeAttente > 1000 * musique_fin_niveau.duration / 2) {
+                    Effacer();
+                    DrawImage(images["level"],15 * BLOC_WIDTH , 2 * BLOC_HEIGHT, 20 * BLOC_WIDTH, 10 * BLOC_HEIGHT);
+                    etape_chgt_niveau = "finale";
+                    dureeAttente = Date.now();
+                }
+                break;
+            case "finale":
+                if (Date.now() - dureeAttente > 1000 * musique_fin_niveau.duration / 2) {
+                    // initialisation du jeu
+                    setup();
+                    change_niveau = false;
+                    etape_chgt_niveau = "initiale";
+                }
+                break;
+            default:
+
+                break;
+        }
     } else {
         if (changeMap) {
             // Changement de zone de map
