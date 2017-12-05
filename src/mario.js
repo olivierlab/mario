@@ -190,7 +190,7 @@ var bloc = {
  * @type Array
  */
 var images = {
-    'deco' : 'http://olivier.leliboux.free.fr/mario/img/mario_deco.png', // image du début du jeu
+    'deco' : 'http://olivier.leliboux.free.fr/mario/img/mario_deco2.png', // image du début du jeu
     'winner' : 'http://olivier.leliboux.free.fr/mario/img/winner.png', // fin de niveau
     'level' : 'http://olivier.leliboux.free.fr/mario/img/level.jpg' // nouveau niveau
 };
@@ -1201,7 +1201,7 @@ function draw() {
     if (start_game) { // démarrage du jeu
         if (Date.now() - dureeAttente < 200) {
             Effacer();
-            DrawImage(images["deco"], 23 * BLOC_WIDTH, 3 * BLOC_HEIGHT, 4 * BLOC_WIDTH, 8 * BLOC_HEIGHT);
+            DrawImage(images["deco"], 14 * BLOC_WIDTH, 0, 22 * BLOC_WIDTH, 22 * BLOC_HEIGHT);
         }
         if (Date.now() - dureeAttente > 2000) {
             start_game = false;
