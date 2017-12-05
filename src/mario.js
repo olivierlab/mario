@@ -175,7 +175,11 @@ var bloc = {
     '1' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_haut_gauche.png',
     '2' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_haut_droit.png', 
     '3' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_bas_gauche.png', 
-    '4' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_bas_droit.png', 
+    '4' : 'http://olivier.leliboux.free.fr/mario/img/tuyau_bas_droit.png',
+    '5' : 'http://olivier.leliboux.free.fr/mario/img/logo_0_0.png',
+    '6' : 'http://olivier.leliboux.free.fr/mario/img/logo_0_1.png',
+    '7' : 'http://olivier.leliboux.free.fr/mario/img/logo_1_0.png',
+    '8' : 'http://olivier.leliboux.free.fr/mario/img/logo_1_1.png',
     'c' : 'http://olivier.leliboux.free.fr/mario/img/champignon.png', // champignon
     '_' : 'http://olivier.leliboux.free.fr/mario/img/sol.png', // sol
     'p' : 'http://olivier.leliboux.free.fr/mario/img/piece_or.png' // piece d'or
