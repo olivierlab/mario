@@ -146,7 +146,8 @@ if (play_sound) {
  * Tableau contenant les maps
  * @type Array
  */
-var maps = ['map1.txt', 
+var maps = ['map0.txt',
+            'map1.txt', 
             'map2.txt',
             'map3.txt'];
 /**
