@@ -100,6 +100,8 @@ const V0 = 400;
  * @type Boolean
  */
 turtleEnabled = false;
+
+var start_game = true;
 /**
  * Indicateur de présence du son
  * @type Boolean
@@ -183,6 +185,7 @@ var bloc = {
  * @type Array
  */
 var images = {
+    'deco' : 'http://olivier.leliboux.free.fr/mario/img/mario_deco.png', // image du début du jeu
     'winner' : 'http://olivier.leliboux.free.fr/mario/img/winner.png', // fin de niveau
     'level' : 'http://olivier.leliboux.free.fr/mario/img/level.jpg' // nouveau niveau
 };
@@ -385,7 +388,7 @@ var etape_chgt_niveau = "initiale";
  * Durée d'attente entre chaque étape
  * @type int
  */
-var dureeAttente;
+var dureeAttente = Date.now();
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="Fonctions">
@@ -975,8 +978,11 @@ function setMarioLigneColonne() {
             // on recommence au départ si on atteint la dernière map
             if (num_map >= maps.length) {
                 num_map = 0;
+                start_game = true;
+                dureeAttente = Date.now();
+            } else {
+                change_niveau = true;
             }
-            change_niveau = true;
         }
     }
     //</editor-fold>
@@ -1155,14 +1161,11 @@ function showInformation() {
         Texte(10 * BLOC_WIDTH, (HAUTEUR_MAP + 9) * BLOC_HEIGHT, "initialiser_saut_mario = " + initialiser_saut_mario, "black");
     }
 }
-//</editor-fold>
 
 /**
- * Initialisation du jeu
+ * Chargement d'un  niveau
  */
-function setup() {
-    console.log('----------------- NEW RUN ------------------------');
-    
+function loadGameLevel() {
     // remise à zéro du tableau des personnages au changement de niveau
     // sinon les personnages du niveau précédent apparaissent au niveau suivant
     personnages = {};
@@ -1175,14 +1178,31 @@ function setup() {
     
     afficherMap(tableau_map, zone_map);
 }
+//</editor-fold>
+
+/**
+ * Initialisation du jeu
+ */
+function setup() {
+    console.log('----------------- NEW RUN ------------------------');
+}
 
 /**
  * Gestion du jeu
  * Il faut tout afficher ici sinon ça fonctionne mal
  */
 function draw() {
-    
-    if (change_niveau) {
+
+    if (start_game) { // démarrage du jeu
+        if (Date.now() - dureeAttente < 200) {
+            Effacer();
+            DrawImage(images["deco"], 23 * BLOC_WIDTH, 3 * BLOC_HEIGHT, 4 * BLOC_WIDTH, 8 * BLOC_HEIGHT);
+        }
+        if (Date.now() - dureeAttente > 2000) {
+            start_game = false;
+            loadGameLevel();
+        }
+    } else if (change_niveau) { // changement de niveau
         switch (etape_chgt_niveau) {
             case "initiale":
                 Effacer();
@@ -1201,7 +1221,7 @@ function draw() {
             case "finale":
                 if (Date.now() - dureeAttente > 1000 * musique_fin_niveau.duration / 2) {
                     // initialisation du jeu
-                    setup();
+                    loadGameLevel();
                     change_niveau = false;
                     etape_chgt_niveau = "initiale";
                 }
@@ -1210,7 +1230,7 @@ function draw() {
 
                 break;
         }
-    } else {
+    } else { // ici on joue !
         if (changeMap) {
             // Changement de zone de map
             afficherMap(tableau_map, zone_map);
